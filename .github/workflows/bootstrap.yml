@@ -1,0 +1,40 @@
+name: SignalLink Genesis Repository Bootstrap
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+  issues: write
+jobs:
+  initialize-project:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies (gh, jq)
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y jq
+          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+          sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+          sudo apt update -y
+          sudo apt install -y gh
+
+      - name: Authenticate gh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "$GITHUB_TOKEN" | gh auth login --with-token
+
+      - name: Run idempotent bootstrap script
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          chmod +x .github/create_phase_one_issues.sh
+          .github/create_phase_one_issues.sh
+
+      - name: Verify repository state
+        run: |
+          gh issue list --limit 200
+          gh api repos/${{ github.repository }}/milestones --jq '.[] | {number,title}'
