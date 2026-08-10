@@ -29,6 +29,7 @@ export default function Home() {
   const [receipt, setReceipt] = useState<Receipt | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
 
   const activeMode = useMemo(() => modes.find((item) => item.id === mode)!, [mode]);
 
@@ -45,6 +46,22 @@ export default function Home() {
       setInput(await file.text());
     } catch {
       setError("This file could not be read as text.");
+    }
+  }
+
+  async function startCheckout() {
+    setCheckoutLoading(true);
+    setError("");
+    try {
+      const response = await fetch("/api/stripe/checkout", { method: "POST" });
+      const data = await response.json();
+      if (!response.ok || !data?.url) {
+        throw new Error(data?.error || "Unable to start checkout.");
+      }
+      window.location.assign(data.url);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Unable to start checkout.");
+      setCheckoutLoading(false);
     }
   }
 
@@ -105,6 +122,24 @@ export default function Home() {
           <span>Server-side xAI connection</span>
           <span>SHA-256 receipts</span>
           <span>Keys never exposed to browsers</span>
+        </div>
+      </section>
+
+      <section className="offer" aria-label="Evidence analysis offer">
+        <div>
+          <p className="step">PAID SERVICE · ONE TIME</p>
+          <h2>SignalLink Evidence Analysis</h2>
+          <p>
+            One structured evidence review with findings, verification steps,
+            and a timestamped SignalLink provenance receipt.
+          </p>
+        </div>
+        <div className="offerAction">
+          <strong>$49</strong>
+          <span>USD · one analysis</span>
+          <button type="button" onClick={startCheckout} disabled={checkoutLoading}>
+            {checkoutLoading ? "Opening Stripe…" : "Purchase securely"}
+          </button>
         </div>
       </section>
 
