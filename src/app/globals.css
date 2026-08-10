@@ -69,6 +69,35 @@ h1 { font-size: clamp(42px, 7vw, 78px); letter-spacing: -.055em; line-height: .9
 .trustRow { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 30px; }
 .trustRow span { background: rgba(255,255,255,.035); border: 1px solid var(--line); border-radius: 999px; color: #cad2de; font-size: 13px; padding: 9px 13px; }
 
+.offer {
+  align-items: center;
+  background: linear-gradient(135deg, rgba(255,107,53,.13), rgba(69,217,255,.07));
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  display: flex;
+  gap: 30px;
+  justify-content: space-between;
+  margin: 0 auto 22px;
+  max-width: 1240px;
+  padding: 26px 30px;
+}
+.offer h2 { margin-bottom: 8px; }
+.offer p { color: var(--muted); line-height: 1.55; margin: 0; max-width: 720px; }
+.offerAction { align-items: flex-end; display: flex; flex-direction: column; flex-shrink: 0; }
+.offerAction strong { font-size: 38px; line-height: 1; }
+.offerAction span { color: var(--muted); font-size: 12px; margin: 5px 0 12px; }
+.offerAction button {
+  background: var(--green);
+  border: 0;
+  border-radius: 9px;
+  color: #06120d;
+  cursor: pointer;
+  font-weight: 900;
+  min-height: 44px;
+  padding: 10px 18px;
+}
+.offerAction button:disabled { cursor: not-allowed; opacity: .55; }
+
 .console {
   background: rgba(17,23,34,.9);
   border: 1px solid var(--line);
@@ -145,6 +174,9 @@ footer { color: var(--muted); display: flex; font-size: 12px; justify-content: s
   .siteHeader { padding: 16px 18px; }
   .status { display: none; }
   .hero { padding: 58px 20px 38px; }
+  .offer { align-items: stretch; border-left: 0; border-radius: 0; border-right: 0; display: block; padding: 24px 20px; }
+  .offerAction { align-items: stretch; margin-top: 22px; }
+  .offerAction button { width: 100%; }
   .console { border-left: 0; border-radius: 0; border-right: 0; margin-bottom: 40px; }
   .modeTabs { grid-template-columns: 1fr 1fr; }
   .workspace { grid-template-columns: 1fr; }
