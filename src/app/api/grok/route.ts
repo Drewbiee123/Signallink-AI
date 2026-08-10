@@ -1,4 +1,5 @@
-import { createHash, randomUUID } from "crypto";
+import { createHash, createHmac, randomUUID, timingSafeEqual } from "crypto";
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
@@ -16,6 +17,30 @@ const instructions: Record<Mode, string> = {
   code:
     "Review the supplied code. Identify concrete bugs and security problems, explain their impact, then provide corrected code. Do not claim to have executed code.",
 };
+
+function hasValidPaidAnalysis(token: string | undefined, secret: string | undefined) {
+  if (!token || !secret) return false;
+  const [payload, suppliedSignature] = token.split(".");
+  if (!payload || !suppliedSignature) return false;
+  const expectedSignature = createHmac("sha256", secret)
+    .update(payload)
+    .digest("base64url");
+  const supplied = Buffer.from(suppliedSignature);
+  const expected = Buffer.from(expectedSignature);
+  if (supplied.length !== expected.length || !timingSafeEqual(supplied, expected)) {
+    return false;
+  }
+  try {
+    const claim = JSON.parse(Buffer.from(payload, "base64url").toString("utf8"));
+    return (
+      claim?.service === "SL-EVIDENCE-49" &&
+      typeof claim?.exp === "number" &&
+      claim.exp > Math.floor(Date.now() / 1000)
+    );
+  } catch {
+    return false;
+  }
+}
 
 function textFromResponse(data: any): string {
   if (typeof data?.output_text === "string") return data.output_text;
@@ -47,6 +72,17 @@ export async function POST(request: Request) {
 
     if (!input) {
       return NextResponse.json({ error: "Input is required." }, { status: 400 });
+    }
+
+    if (mode === "evidence") {
+      const cookieStore = await cookies();
+      const paidToken = cookieStore.get("slk_paid_analysis")?.value;
+      if (!hasValidPaidAnalysis(paidToken, process.env.SIGNALLINK_APP_SECRET)) {
+        return NextResponse.json(
+          { error: "Purchase the $49 Evidence Analysis to run this mode.", payment_required: true },
+          { status: 402 }
+        );
+      }
     }
     if (input.length > 100_000) {
       return NextResponse.json(
@@ -102,7 +138,7 @@ export async function POST(request: Request) {
       .update(canonicalRecord)
       .digest("hex");
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       output,
       receipt: {
         receipt_id: `slk_${randomUUID()}`,
@@ -115,6 +151,10 @@ export async function POST(request: Request) {
         anchor_phrase: "Even your house was born on your foundation.",
       },
     });
+    if (mode === "evidence") {
+      response.cookies.delete("slk_paid_analysis");
+    }
+    return response;
   } catch (error) {
     console.error("SignalLink Grok route error", error);
     return NextResponse.json({ error: "Internal server error." }, { status: 500 });
