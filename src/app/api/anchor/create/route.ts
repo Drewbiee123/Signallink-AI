@@ -1,10 +1,10 @@
 export const runtime = 'nodejs';
 
 import crypto from 'crypto';
-import { canonicalize } from '../../../../lib/canonicalize';
-import { sha256hex } from '../../../../lib/hashing';
-import { signString } from '../../../../lib/signing';
-import { AnchorRequest, AnchorResponse, AnchorRecord } from '../../../../lib/types';
+import { canonicalize } from '../../../../../lib/canonicalize';
+import { sha256hex } from '../../../../../lib/hashing';
+import { signString } from '../../../../../lib/signing';
+import { AnchorRequest, AnchorResponse, AnchorRecord } from '../../../../../lib/types';
 import { NextResponse } from 'next/server';
 
 // In-memory store for scaffold purposes only
