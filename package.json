@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "test": "node --test tests/*.test.mjs"
+    "test": "node --test tests/*.test.mjs",
+    "certify:production": "node scripts/certify-production.mjs"
   },
   "engines": { "node": "20.x" },
   "dependencies": {
