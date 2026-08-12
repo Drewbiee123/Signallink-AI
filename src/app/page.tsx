@@ -11,7 +11,10 @@ export default function Home() {
         <div><span>Provenance</span><strong>Layer 33</strong></div>
         <div><span>Vendor</span><strong>CAGE 16WJ1</strong></div>
       </section>
-      <p className="actions"><Link href="/recognition">View verified production evidence</Link></p>
+      <div className="actions action-row">
+        <Link href="/services">Purchase or commission SignalLink</Link>
+        <Link href="/recognition" className="secondary-action">View verified production evidence</Link>
+      </div>
       <p className="quote">“Even your house was born on your foundation.”</p>
     </main>
   );
