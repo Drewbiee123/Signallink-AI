@@ -81,3 +81,30 @@ gh secret set SLACK_RECOGNITION_WEBHOOK_URL
 ```
 
 The Slack step is skipped when that secret is absent. It never weakens or blocks the public verification page, machine-readable record, search discovery, GitHub release, or certification artifact.
+
+## Revenue Gateway
+
+The certified build now includes:
+
+- `/services` for the live $49 Stripe offer and qualified pilot, monitoring, invoice, PO, and ACH/EFT requests.
+- `POST /api/checkout` for Stripe-hosted Checkout using dynamic payment methods.
+- `POST /api/leads` for private, server-persisted commercial requests.
+- `POST /api/stripe/webhook` for signed, retryable, idempotent payment fulfillment.
+- `/checkout/success` for server-verified payment status.
+- private Supabase tables: `revenue_leads`, `revenue_orders`, and `stripe_webhook_events`.
+
+Required Vercel production environment variables:
+
+- `STRIPE_RESTRICTED_KEY` (recommended) or `STRIPE_SECRET_KEY`
+- `STRIPE_PRICE_EVIDENCE_ANALYSIS=price_1U2hiNRoFxjovMy9bTusFnIo`
+- `STRIPE_WEBHOOK_SECRET`
+- `NEXT_PUBLIC_APP_URL`
+- the existing Supabase and SignalLink signing values
+
+Register the deployed endpoint `https://<production-domain>/api/stripe/webhook` in Stripe Workbench. Subscribe to:
+
+- `checkout.session.completed`
+- `checkout.session.async_payment_succeeded`
+- `checkout.session.async_payment_failed`
+
+Commercial website checkout is separate from federal payments. Federal customers continue through authorized invoices, purchase orders, and SAM/EFT instructions. No cryptocurrency address is displayed or accepted until a company-owned wallet, custody method, accounting policy, and reconciliation process are confirmed.
