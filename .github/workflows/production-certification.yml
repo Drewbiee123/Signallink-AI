@@ -1,0 +1,106 @@
+name: Production Certification
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: "Type CERTIFY to deploy and write one permanent certification anchor"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+  attestations: write
+
+concurrency:
+  group: signalink-production-certification
+  cancel-in-progress: false
+
+jobs:
+  certify:
+    if: ${{ inputs.confirmation == 'CERTIFY' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      VERCEL_SCOPE: signallink-protocol-ai
+
+    steps:
+      - name: Check out the exact candidate
+        uses: actions/checkout@v4
+
+      - name: Use Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Validate required credentials without printing values
+        shell: bash
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          missing=0
+          for name in VERCEL_TOKEN VERCEL_ORG_ID VERCEL_PROJECT_ID NEXT_PUBLIC_SUPABASE_URL SUPABASE_SERVICE_ROLE_KEY; do
+            if [ -z "${!name:-}" ]; then
+              echo "::error::Missing GitHub Actions secret: $name"
+              missing=1
+            fi
+          done
+          exit "$missing"
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Run deterministic tests
+        run: npm test
+
+      - name: Build the application
+        run: npm run build
+
+      - name: Pull the authorized Vercel production configuration
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: npx --yes vercel@58.1.0 pull --yes --environment=production --scope="$VERCEL_SCOPE" --token="$VERCEL_TOKEN"
+
+      - name: Build the Vercel production artifact
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: npx --yes vercel@58.1.0 build --prod --scope="$VERCEL_SCOPE" --token="$VERCEL_TOKEN"
+
+      - name: Deploy the exact prebuilt artifact
+        id: deploy
+        shell: bash
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          deployment_url="$(npx --yes vercel@58.1.0 deploy --prebuilt --prod --yes --scope="$VERCEL_SCOPE" --token="$VERCEL_TOKEN" 2> >(tee /dev/stderr) | tail -n 1)"
+          case "$deployment_url" in
+            https://*) ;;
+            *) echo "::error::Vercel did not return a valid deployment URL"; exit 1 ;;
+          esac
+          echo "url=$deployment_url" >> "$GITHUB_OUTPUT"
+          echo "Production deployment: $deployment_url" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Prove health, create one anchor, confirm the ledger, and recompute SHA-256
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/certify-production.mjs "${{ steps.deploy.outputs.url }}"
+
+      - name: Attest the certification packet
+        uses: actions/attest-build-provenance@v3
+        with:
+          subject-path: artifacts/production-certification.json
+
+      - name: Preserve the certification packet
+        uses: actions/upload-artifact@v4
+        with:
+          name: signalink-production-certification-${{ github.run_id }}
+          path: artifacts/production-certification.json
+          if-no-files-found: error
+          retention-days: 90
