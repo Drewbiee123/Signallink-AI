@@ -47,6 +47,11 @@ if (health.status !== "ok" || health.database !== "connected") {
 
 const payload = {
   certification: "signalink-production",
+  framework: "ADA-4WM",
+  assurance_tier: "Tier 1-A",
+  provenance_layer: 33,
+  anchor_method: "SHA-256",
+  anchor_phrase: "Even your house was born on your foundation.",
   commit,
   run_id: runId,
   purpose: "end-to-end anchor persistence and independent digest verification"
@@ -60,6 +65,10 @@ const anchorResponse = await fetch(`${baseUrl}/api/anchor/create`, {
     payload,
     metadata: {
       certification: true,
+      framework: "ADA-4WM",
+      assurance_tier: "Tier 1-A",
+      provenance_layer: 33,
+      anchor_phrase: "Even your house was born on your foundation.",
       commit,
       run_id: runId,
       source: "github-actions"
@@ -98,6 +107,11 @@ const record = {
   timestamp: Math.floor(Date.now() / 1000),
   event: "SignalLink production certification passed: build, deployment, health, anchor creation, ledger persistence, and independent SHA-256 verification",
   origin: "SignalLink Protocol LLC / SignalLink AI",
+  framework: "ADA-4WM",
+  assurance_tier: "Tier 1-A",
+  provenance_layer: 33,
+  anchor_method: "SHA-256",
+  anchor_phrase: "Even your house was born on your foundation.",
   evidence: {
     commit,
     github_run_id: runId,
