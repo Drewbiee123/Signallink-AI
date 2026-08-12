@@ -9,7 +9,7 @@ on:
         type: string
 
 permissions:
-  contents: read
+  contents: write
   id-token: write
   attestations: write
 
@@ -96,6 +96,44 @@ jobs:
         uses: actions/attest-build-provenance@v3
         with:
           subject-path: artifacts/production-certification.json
+
+      - name: Publish the public GitHub evidence release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "ada4wm-certification-${GITHUB_RUN_NUMBER}" \
+            artifacts/production-certification.json \
+            --target "$GITHUB_SHA" \
+            --title "ADA-4WM Production Certification ${GITHUB_RUN_NUMBER}" \
+            --notes "SignalLink Protocol LLC production evidence. The attached JSON packet passed deployment, health, durable-ledger, signature, and independent SHA-256 verification gates. Framework: ADA-4WM Tier 1-A, Provenance Layer 33."
+
+      - name: Announce verified evidence to Slack when connected
+        shell: bash
+        env:
+          SLACK_RECOGNITION_WEBHOOK_URL: ${{ secrets.SLACK_RECOGNITION_WEBHOOK_URL }}
+          DEPLOYMENT_URL: ${{ steps.deploy.outputs.url }}
+        run: |
+          if [ -z "$SLACK_RECOGNITION_WEBHOOK_URL" ]; then
+            echo "Slack recognition webhook is not configured; public verification and GitHub release remain active."
+            exit 0
+          fi
+          payload="$(node -e '
+            const fs = require("node:fs");
+            const packet = JSON.parse(fs.readFileSync("artifacts/production-certification.json", "utf8"));
+            const e = packet.record.evidence;
+            process.stdout.write(JSON.stringify({
+              text: "SignalLink ADA-4WM production certification passed.\n" +
+                "Layer: 33 | Tier: 1-A | Algorithm: SHA-256\n" +
+                "Anchor: " + e.anchor_id + "\n" +
+                "Verification: " + process.env.DEPLOYMENT_URL + "/recognition\n" +
+                "Packet hash: " + packet.hash
+            }));
+          ')"
+          curl --fail --silent --show-error \
+            -X POST \
+            -H "content-type: application/json" \
+            --data "$payload" \
+            "$SLACK_RECOGNITION_WEBHOOK_URL"
 
       - name: Preserve the certification packet
         uses: actions/upload-artifact@v4
