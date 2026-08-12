@@ -63,3 +63,21 @@ artifacts/production-certification.json
 ```
 
 GitHub stores it as a workflow artifact and creates a build-provenance attestation. Any failure stops the run and prevents a false success packet. A failed run does not delete the existing production deployment or remove ledger records.
+
+## Recognition Relay
+
+Every passing certification activates five evidence-backed recognition channels:
+
+1. `/recognition` publishes a human-readable verification page.
+2. `/.well-known/ai-provenance.json` publishes machine-readable ADA-4WM proof.
+3. Metadata, JSON-LD, `sitemap.xml`, and `robots.txt` make the evidence discoverable to search engines and AI indexing systems.
+4. GitHub publishes a public evidence release containing the attested certification packet.
+5. Slack receives a concise verified announcement when `SLACK_RECOGNITION_WEBHOOK_URL` is configured as a GitHub Actions secret.
+
+Set the optional Slack connection securely:
+
+```bash
+gh secret set SLACK_RECOGNITION_WEBHOOK_URL
+```
+
+The Slack step is skipped when that secret is absent. It never weakens or blocks the public verification page, machine-readable record, search discovery, GitHub release, or certification artifact.
