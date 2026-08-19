@@ -1,0 +1,93 @@
+name: Genesis Validation V1
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  id-token: write
+  attestations: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out exact source commit
+        uses: actions/checkout@v4
+
+      - name: Use Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Run deterministic protocol tests
+        run: npm test
+
+      - name: Generate Genesis evidence packet
+        run: npm run validate:genesis
+
+      - name: Build production application
+        run: npm run build
+
+      - name: Attest Genesis validation packet with GitHub provenance
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        uses: actions/attest-build-provenance@v3
+        with:
+          subject-path: artifacts/genesis-validation-v1.json
+
+      - name: Install Cosign for Sigstore transparency proof
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        uses: sigstore/cosign-installer@v4.1.2
+
+      - name: Sign Genesis packet with GitHub OIDC and Sigstore
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        run: cosign sign-blob artifacts/genesis-validation-v1.json --bundle artifacts/genesis-validation-v1.sigstore.json --yes
+
+      - name: Verify Sigstore bundle in the same clean runner
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        run: >
+          cosign verify-blob artifacts/genesis-validation-v1.json
+          --bundle artifacts/genesis-validation-v1.sigstore.json
+          --certificate-identity=https://github.com/Drewbiee123/Signallink-AI/.github/workflows/genesis-validation.yml@refs/heads/main
+          --certificate-oidc-issuer=https://token.actions.githubusercontent.com
+
+      - name: Preserve Genesis evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: signalink-genesis-validation-${{ github.run_id }}
+          path: |
+            artifacts/genesis-validation-v1.json
+            artifacts/genesis-validation-v1.sha256
+            artifacts/genesis-validation-v1.sigstore.json
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Publish validation summary
+        shell: bash
+        run: |
+          node - <<'NODE' >> "$GITHUB_STEP_SUMMARY"
+          const fs = require('node:fs');
+          const packet = JSON.parse(fs.readFileSync('artifacts/genesis-validation-v1.json', 'utf8'));
+          const r = packet.record;
+          const sigstore = fs.existsSync('artifacts/genesis-validation-v1.sigstore.json');
+          console.log('# SignalLink Genesis Validation V1');
+          console.log('');
+          console.log(`**Status:** ${r.outcome.status}`);
+          console.log(`**Checks:** ${r.outcome.passed} passed / ${r.outcome.failed} failed`);
+          console.log(`**100 mutations changed digest:** ${r.mutation_summary.changed_digest}/100`);
+          console.log(`**Unique mutation hashes:** ${r.mutation_summary.unique_hashes}/100`);
+          console.log(`**Average SHA-256 Hamming distance:** ${r.mutation_summary.average_hamming_distance_bits} bits`);
+          console.log(`**Evidence packet SHA-256:** \`${packet.hash}\``);
+          console.log(`**Sigstore bundle created:** ${sigstore ? 'yes' : 'not applicable on pull-request validation'}`);
+          console.log('');
+          console.log('Scope: deterministic implementation-level cryptographic and tamper testing. This is not third-party certification.');
+          NODE

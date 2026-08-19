@@ -1,12 +1,13 @@
 {
   "name": "signallink-ai",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "test": "node --test tests/*.test.mjs",
+    "validate:genesis": "node scripts/genesis-validation.mjs",
     "certify:production": "node scripts/certify-production.mjs"
   },
   "engines": { "node": "20.x" },
