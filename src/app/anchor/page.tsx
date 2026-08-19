@@ -12,6 +12,13 @@ type AnchorReceipt = {
   status: "CREATED";
 };
 
+type VerificationPacket = {
+  payload: unknown;
+  timestamp: string;
+  hash: string;
+  signature: string;
+};
+
 const starter = JSON.stringify({
   event: "GENESIS-LIVE-001",
   origin: "SignalLink Protocol LLC / SignalLink AI",
@@ -23,6 +30,7 @@ const starter = JSON.stringify({
 export default function AnchorPage() {
   const [payloadText, setPayloadText] = useState(starter);
   const [receipt, setReceipt] = useState<AnchorReceipt | null>(null);
+  const [verificationPacket, setVerificationPacket] = useState<VerificationPacket | null>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -30,6 +38,7 @@ export default function AnchorPage() {
     setBusy(true);
     setError("");
     setReceipt(null);
+    setVerificationPacket(null);
     try {
       const payload = JSON.parse(payloadText);
       const response = await fetch("/api/anchor/create", {
@@ -47,7 +56,9 @@ export default function AnchorPage() {
       });
       const body = await response.json();
       if (!response.ok) throw new Error(body.error || `Anchor request failed (${response.status})`);
-      setReceipt(body as AnchorReceipt);
+      const created = body as AnchorReceipt;
+      setReceipt(created);
+      setVerificationPacket({ payload, timestamp: created.timestamp, hash: created.hash, signature: created.signature });
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Unable to create anchor");
     } finally {
@@ -69,7 +80,7 @@ export default function AnchorPage() {
 
       {error ? <div className="error-box" role="alert">{error}</div> : null}
 
-      {receipt ? (
+      {receipt && verificationPacket ? (
         <>
           <div className="success-box" role="status">Anchor created and persisted.</div>
           <dl className="evidence">
@@ -81,7 +92,7 @@ export default function AnchorPage() {
           </dl>
           <details className="receipt-json">
             <summary>Copy verification packet</summary>
-            <pre>{JSON.stringify({ payload: JSON.parse(payloadText), timestamp: receipt.timestamp, hash: receipt.hash, signature: receipt.signature }, null, 2)}</pre>
+            <pre>{JSON.stringify(verificationPacket, null, 2)}</pre>
           </details>
         </>
       ) : null}
