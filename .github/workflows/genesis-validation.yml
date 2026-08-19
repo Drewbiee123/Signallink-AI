@@ -45,19 +45,19 @@ jobs:
           subject-path: artifacts/genesis-validation-v1.json
 
       - name: Install Cosign for Sigstore transparency proof
-        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         uses: sigstore/cosign-installer@v4.1.2
 
       - name: Sign Genesis packet with GitHub OIDC and Sigstore
-        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         run: cosign sign-blob artifacts/genesis-validation-v1.json --bundle artifacts/genesis-validation-v1.sigstore.json --yes
 
       - name: Verify Sigstore bundle in the same clean runner
-        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         run: >
           cosign verify-blob artifacts/genesis-validation-v1.json
           --bundle artifacts/genesis-validation-v1.sigstore.json
-          --certificate-identity=https://github.com/Drewbiee123/Signallink-AI/.github/workflows/genesis-validation.yml@refs/heads/main
+          --certificate-identity-regexp='https://github.com/Drewbiee123/Signallink-AI/.github/workflows/genesis-validation.yml@refs/(heads/main|pull/[0-9]+/merge)'
           --certificate-oidc-issuer=https://token.actions.githubusercontent.com
 
       - name: Preserve Genesis evidence
@@ -87,7 +87,7 @@ jobs:
           console.log(`**Unique mutation hashes:** ${r.mutation_summary.unique_hashes}/100`);
           console.log(`**Average SHA-256 Hamming distance:** ${r.mutation_summary.average_hamming_distance_bits} bits`);
           console.log(`**Evidence packet SHA-256:** \`${packet.hash}\``);
-          console.log(`**Sigstore bundle created:** ${sigstore ? 'yes' : 'not applicable on pull-request validation'}`);
+          console.log(`**Sigstore bundle created and verified:** ${sigstore ? 'yes' : 'no'}`);
           console.log('');
           console.log('Scope: deterministic implementation-level cryptographic and tamper testing. This is not third-party certification.');
           NODE
