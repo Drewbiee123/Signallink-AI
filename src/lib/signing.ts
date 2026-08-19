@@ -20,13 +20,21 @@ function publicKey(): crypto.KeyObject | null {
   return null;
 }
 
+function signatureAlgorithm(key: crypto.KeyObject): string | null {
+  const type = key.asymmetricKeyType;
+  if (type === "ed25519" || type === "ed448") return null;
+  if (type === "rsa" || type === "rsa-pss" || type === "ec") return "sha256";
+  throw new Error(`Unsupported asymmetric key type: ${type || "unknown"}`);
+}
+
 function safeEqual(a: Buffer, b: Buffer): boolean {
   return a.length === b.length && crypto.timingSafeEqual(a, b);
 }
 
 export function signString(message: string): string {
   try {
-    return crypto.sign(null, Buffer.from(message), privateKey()).toString("base64");
+    const key = privateKey();
+    return crypto.sign(signatureAlgorithm(key), Buffer.from(message), key).toString("base64");
   } catch (error) {
     if (error instanceof Error && error.message === "HMAC_MODE") {
       return `hmac-sha256:${crypto.createHmac("sha256", process.env.SIGNALINK_HMAC_KEY!).update(message).digest("base64")}`;
@@ -47,7 +55,7 @@ export function verifyString(message: string, signature: string): boolean {
 
     const key = publicKey();
     if (!key) return false;
-    return crypto.verify(null, Buffer.from(message), key, Buffer.from(signature, "base64"));
+    return crypto.verify(signatureAlgorithm(key), Buffer.from(message), key, Buffer.from(signature, "base64"));
   } catch {
     return false;
   }
