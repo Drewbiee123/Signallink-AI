@@ -1,0 +1,74 @@
+name: Genesis Validation V1
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  id-token: write
+  attestations: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out exact source commit
+        uses: actions/checkout@v4
+
+      - name: Use Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Run deterministic protocol tests
+        run: npm test
+
+      - name: Generate Genesis evidence packet
+        run: npm run validate:genesis
+
+      - name: Build production application
+        run: npm run build
+
+      - name: Attest Genesis validation packet
+        if: github.event_name != 'pull_request'
+        uses: actions/attest-build-provenance@v3
+        with:
+          subject-path: artifacts/genesis-validation-v1.json
+
+      - name: Preserve Genesis evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: signalink-genesis-validation-${{ github.run_id }}
+          path: |
+            artifacts/genesis-validation-v1.json
+            artifacts/genesis-validation-v1.sha256
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Publish validation summary
+        shell: bash
+        run: |
+          node - <<'NODE' >> "$GITHUB_STEP_SUMMARY"
+          const fs = require('node:fs');
+          const packet = JSON.parse(fs.readFileSync('artifacts/genesis-validation-v1.json', 'utf8'));
+          const r = packet.record;
+          console.log('# SignalLink Genesis Validation V1');
+          console.log('');
+          console.log(`**Status:** ${r.outcome.status}`);
+          console.log(`**Checks:** ${r.outcome.passed} passed / ${r.outcome.failed} failed`);
+          console.log(`**100 mutations changed digest:** ${r.mutation_summary.changed_digest}/100`);
+          console.log(`**Unique mutation hashes:** ${r.mutation_summary.unique_hashes}/100`);
+          console.log(`**Average SHA-256 Hamming distance:** ${r.mutation_summary.average_hamming_distance_bits} bits`);
+          console.log(`**Evidence packet SHA-256:** \`${packet.hash}\``);
+          console.log('');
+          console.log('Scope: deterministic implementation-level cryptographic and tamper testing. This is not third-party certification.');
+          NODE
