@@ -45,16 +45,18 @@ export interface StripeCheckoutSession {
 }
 
 export async function createEvidenceCheckout(origin: string) {
-  const price = process.env.STRIPE_PRICE_EVIDENCE_ANALYSIS || "price_1U2hiNRoFxjovMy9bTusFnIo";
   const body = new URLSearchParams({
     mode: "payment",
-    "line_items[0][price]": price,
+    "line_items[0][price_data][currency]": "usd",
+    "line_items[0][price_data][unit_amount]": "4900",
+    "line_items[0][price_data][product_data][name]": "SignalLink Evidence Analysis",
+    "line_items[0][price_data][product_data][description]": "One professional evidence-analysis session with structured findings and a SignalLink provenance receipt.",
     "line_items[0][quantity]": "1",
     customer_creation: "always",
     allow_promotion_codes: "true",
     success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${origin}/services?checkout=cancelled`,
-    integration_identifier: integrationIdentifier(),
+    client_reference_id: integrationIdentifier(),
     "metadata[service_code]": "SL-EVIDENCE-49",
     "metadata[origin]": "SignalLink Protocol LLC",
     "metadata[framework]": "ADA-4WM",
