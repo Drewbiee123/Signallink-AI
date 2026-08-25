@@ -15,4 +15,8 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
+      - name: Reproduce challenge in Node
+        run: node scripts/reproduce-federal-challenge.mjs
+      - name: Reproduce challenge independently in Python
+        run: python3 scripts/reproduce-federal-challenge.py
       - run: npm run build
