@@ -14,8 +14,14 @@ export default function Home() {
       <div className="actions action-row">
         <Link href="/anchor">Create an anchor</Link>
         <Link href="/verify">Verify evidence</Link>
+        <Link href="/challenge" className="secondary-action">Take reproducibility challenge</Link>
+        <Link href="/federal" className="secondary-action">Federal mission gateway</Link>
         <Link href="/recognition" className="secondary-action">View published evidence</Link>
         <Link href="/services" className="secondary-action">Commercial services</Link>
+      </div>
+      <div className="notice">
+        <strong>Open verification challenge</strong>
+        <p>Independent developers and technical reviewers can reproduce SignalLink Public Reproducibility Challenge #1 without trusting the SignalLink server and publish PASS/FAIL results in the open GitHub review thread.</p>
       </div>
       <div className="notice">
         <strong>Validation boundary</strong>
