@@ -2,12 +2,26 @@
 
 SignalLink Protocol LLC's verifiable evidence gateway for canonical SHA-256 anchoring, timestamp/signature binding, durable anchor storage, and independent tamper verification.
 
+## Public reproducibility challenge
+
+**Challenge #1 is open:** reproduce a published federal source-state SHA-256 result without trusting SignalLink's server.
+
+- Challenge page: `/challenge`
+- Test vector: `/challenges/federal-repro-v1.json`
+- Open review thread: https://github.com/Drewbiee123/Signallink-AI/issues/9
+- One-command reference verifier: `node scripts/reproduce-federal-challenge.mjs`
+- Expected SHA-256: `b325608828a14df655f1b81d3a452cbd490292e6f3b5af6cae87bb4e1f0e8c77`
+
+Independent participants are encouraged to reproduce the result using their own implementation and post PASS/FAIL plus their canonical string and digest in the public issue. A successful reproduction demonstrates deterministic cross-implementation agreement only; it is not government or third-party certification or endorsement.
+
 ## Product surface
 
 - `POST /api/anchor/create` — canonicalizes a JSON payload, computes SHA-256, timestamps and signs the digest, and persists the receipt to the `anchors` ledger.
 - `POST /api/anchor/verify` — independently recomputes the canonical digest and verifies the signature binding.
 - `/anchor` — accessible browser interface for creating an anchor receipt.
 - `/verify` — accessible browser interface for validating a receipt and identifying hash/signature failure.
+- `/federal` — Federal Mission Assurance Gateway using authoritative federal-source data with explicit SignalLink analysis boundaries.
+- `/challenge` — public third-party reproducibility challenge.
 - `/recognition` — publishes the latest completed production evidence record when one exists.
 - `/.well-known/ai-provenance.json` — machine-readable public provenance relay.
 - `/api/health` — protocol/database/commerce health status.
