@@ -1,4 +1,8 @@
+import crypto from "node:crypto";
 import { NextResponse } from "next/server";
+import { canonicalize } from "@/lib/canonicalize";
+import { sha256hex } from "@/lib/hashing";
+import { signString } from "@/lib/signing";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 import { verifyStripeSignature, type StripeCheckoutSession } from "@/lib/stripe-api";
 
@@ -9,6 +13,7 @@ const MAX_STRIPE_WEBHOOK_BYTES = 1024 * 1024;
 interface StripeEvent {
   id: string;
   type: string;
+  created?: number;
   data: { object: StripeCheckoutSession };
 }
 
@@ -50,10 +55,13 @@ export async function POST(request: Request) {
       "checkout.session.async_payment_succeeded",
       "checkout.session.async_payment_failed"
     ]);
+
     if (relevant.has(event.type)) {
       const session = event.data.object;
       const paid = session.payment_status === "paid";
       const failed = event.type === "checkout.session.async_payment_failed";
+      const processedAt = new Date().toISOString();
+
       const { error } = await supabase.from("revenue_orders").upsert({
         stripe_session_id: session.id,
         payment_intent_id: session.payment_intent,
@@ -66,11 +74,48 @@ export async function POST(request: Request) {
         metadata: {
           framework: "ADA-4WM",
           provenance_layer: 33,
-          stripe_event_id: event.id
+          stripe_event_id: event.id,
+          stripe_signature_verified: true
         },
-        updated_at: new Date().toISOString()
+        updated_at: processedAt
       }, { onConflict: "stripe_session_id" });
       if (error) throw error;
+
+      if (paid) {
+        const receiptPayload = {
+          schema: "signallink.payment-receipt.v1",
+          stripe_event_id: event.id,
+          stripe_event_type: event.type,
+          stripe_session_id: session.id,
+          payment_intent_id: session.payment_intent,
+          service_code: session.metadata?.service_code || "unknown",
+          amount_total: session.amount_total,
+          currency: session.currency,
+          payment_status: session.payment_status,
+          processed_at: processedAt
+        };
+        const hash = sha256hex(canonicalize(receiptPayload));
+        const timestamp = processedAt;
+        const signatureValue = signString(`${hash}|${timestamp}`);
+        const { error: anchorError } = await supabase.from("anchors").insert({
+          anchor_id: `slk_pay_${crypto.randomUUID()}`,
+          timestamp,
+          hash_algorithm: "SHA-256",
+          hash,
+          signature: signatureValue,
+          signer: process.env.SIGNALINK_SIGNER || "SignalLink Protocol LLC / SignalLink AI",
+          metadata: {
+            framework: "ADA-4WM",
+            provenance_layer: 33,
+            evidence_scope: "stripe_payment_event",
+            stripe_event_id: event.id,
+            stripe_session_id: session.id,
+            stripe_signature_verified: true,
+            external_attestation_claimed: false
+          }
+        });
+        if (anchorError) throw anchorError;
+      }
     }
 
     const { error: eventError } = await supabase.from("stripe_webhook_events").insert({
