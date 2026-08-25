@@ -31,16 +31,16 @@ cross-runtime-agreement:
   script:
     - apt-get update >/dev/null
     - apt-get install -y --no-install-recommends python3 >/dev/null
-    - node scripts/reproduce-federal-challenge.mjs | tee /tmp/node-result.txt
-    - python3 scripts/reproduce-federal-challenge.py | tee /tmp/python-result.txt
-    - grep -q "RESULT: PASS" /tmp/node-result.txt
-    - grep -q "RESULT: PASS" /tmp/python-result.txt
-    - echo "CROSS_RUNTIME_RESULT=PASS"
+    - mkdir -p artifacts/cross-runtime
+    - node scripts/reproduce-federal-challenge.mjs | tee artifacts/cross-runtime/node-result.txt
+    - python3 scripts/reproduce-federal-challenge.py | tee artifacts/cross-runtime/python-result.txt
+    - grep -q "RESULT: PASS" artifacts/cross-runtime/node-result.txt
+    - grep -q "RESULT: PASS" artifacts/cross-runtime/python-result.txt
+    - echo "CROSS_RUNTIME_RESULT=PASS" | tee artifacts/cross-runtime/summary.txt
   artifacts:
     when: always
     paths:
-      - /tmp/node-result.txt
-      - /tmp/python-result.txt
+      - artifacts/cross-runtime/
     expire_in: 30 days
 
 production-build:
