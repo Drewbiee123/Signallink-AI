@@ -4,6 +4,8 @@ import { getLatestRecognition } from "@/lib/recognition";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
+const verificationScope = "SignalLink implementation-level production evidence; not third-party certification or endorsement";
+
 export async function GET() {
   const record = await getLatestRecognition();
   if (!record) {
@@ -12,7 +14,8 @@ export async function GET() {
       origin: "SignalLink Protocol LLC / SignalLink AI",
       framework: "ADA-4WM",
       assurance_tier: "Tier 1-A",
-      provenance_layer: 33
+      provenance_layer: 33,
+      verification_scope: verificationScope
     }, { status: 404, headers: { "cache-control": "no-store" } });
   }
 
@@ -22,6 +25,7 @@ export async function GET() {
     framework: "ADA-4WM",
     assurance_tier: "Tier 1-A",
     provenance_layer: 33,
+    verification_scope: verificationScope,
     anchor_phrase: "Even your house was born on your foundation.",
     verification: record
   }, {
