@@ -6,8 +6,7 @@ export async function GET() {
   const signingConfigured = Boolean(process.env.SIGNALINK_PRIVATE_KEY || process.env.SIGNALINK_HMAC_KEY);
   const paymentsConfigured = Boolean(
     (process.env.STRIPE_RESTRICTED_KEY || process.env.STRIPE_SECRET_KEY) &&
-    process.env.STRIPE_WEBHOOK_SECRET &&
-    process.env.STRIPE_PRICE_EVIDENCE_ANALYSIS
+    process.env.STRIPE_WEBHOOK_SECRET
   );
 
   if (!supabase) {
@@ -22,7 +21,8 @@ export async function GET() {
   const checks = await Promise.all([
     supabase.from("anchors").select("anchor_id", { head: true, count: "exact" }),
     supabase.from("revenue_leads").select("id", { head: true, count: "exact" }),
-    supabase.from("revenue_orders").select("stripe_session_id", { head: true, count: "exact" })
+    supabase.from("revenue_orders").select("stripe_session_id", { head: true, count: "exact" }),
+    supabase.from("stripe_webhook_events").select("event_id", { head: true, count: "exact" })
   ]);
   const databaseReady = checks.every((check) => !check.error);
   const protocolReady = databaseReady && signingConfigured;
