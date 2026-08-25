@@ -1,10 +1,33 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Public Reproducibility Challenge #1 | SignalLink Protocol LLC",
+  description: "Independently reproduce a published SignalLink federal source-state SHA-256 result without trusting SignalLink's server.",
+  alternates: { canonical: "/challenge" },
+  openGraph: {
+    title: "SignalLink Public Reproducibility Challenge #1",
+    description: "A public, falsifiable SHA-256 provenance challenge for independent developers, auditors, integrators, and federal technical reviewers.",
+    type: "article"
+  }
+};
 
 const expected = "b325608828a14df655f1b81d3a452cbd490292e6f3b5af6cae87bb4e1f0e8c77";
 
 export default function ChallengePage() {
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    headline: "SignalLink Public Reproducibility Challenge #1",
+    author: { "@type": "Organization", name: "SignalLink Protocol LLC" },
+    about: ["AI provenance", "SHA-256", "reproducibility", "federal source-state evidence"],
+    identifier: "SIGNALLINK-FEDERAL-REPRO-V1",
+    isBasedOn: "/challenges/federal-repro-v1.json"
+  };
+
   return (
     <main>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
       <p className="eyebrow">SIGNALLINK PUBLIC REPRODUCIBILITY CHALLENGE #1</p>
       <h1>Do not trust SignalLink. Reproduce the result yourself.</h1>
       <p className="lead">
