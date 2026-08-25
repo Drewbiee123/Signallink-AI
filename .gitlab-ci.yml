@@ -1,0 +1,50 @@
+stages:
+  - protocol
+  - reproduce
+  - build
+
+default:
+  image: node:24-bookworm
+
+protocol-validation:
+  stage: protocol
+  script:
+    - node --version
+    - npm ci
+    - npm test
+
+reproduce-javascript:
+  stage: reproduce
+  script:
+    - node scripts/reproduce-federal-challenge.mjs
+
+reproduce-python:
+  stage: reproduce
+  image: python:3.13-slim
+  script:
+    - python --version
+    - python scripts/reproduce-federal-challenge.py
+
+cross-runtime-agreement:
+  stage: reproduce
+  image: node:24-bookworm
+  script:
+    - apt-get update >/dev/null
+    - apt-get install -y --no-install-recommends python3 >/dev/null
+    - node scripts/reproduce-federal-challenge.mjs | tee /tmp/node-result.txt
+    - python3 scripts/reproduce-federal-challenge.py | tee /tmp/python-result.txt
+    - grep -q "RESULT: PASS" /tmp/node-result.txt
+    - grep -q "RESULT: PASS" /tmp/python-result.txt
+    - echo "CROSS_RUNTIME_RESULT=PASS"
+  artifacts:
+    when: always
+    paths:
+      - /tmp/node-result.txt
+      - /tmp/python-result.txt
+    expire_in: 30 days
+
+production-build:
+  stage: build
+  script:
+    - npm ci
+    - npm run build
