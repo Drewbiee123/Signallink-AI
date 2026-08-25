@@ -4,6 +4,8 @@ import { verifyStripeSignature, type StripeCheckoutSession } from "@/lib/stripe-
 
 export const runtime = "nodejs";
 
+const MAX_STRIPE_WEBHOOK_BYTES = 1024 * 1024;
+
 interface StripeEvent {
   id: string;
   type: string;
@@ -12,7 +14,16 @@ interface StripeEvent {
 
 export async function POST(request: Request) {
   try {
+    const contentLength = request.headers.get("content-length");
+    if (contentLength && Number(contentLength) > MAX_STRIPE_WEBHOOK_BYTES) {
+      return NextResponse.json({ error: "Payload too large" }, { status: 413 });
+    }
+
     const payload = await request.text();
+    if (Buffer.byteLength(payload, "utf8") > MAX_STRIPE_WEBHOOK_BYTES) {
+      return NextResponse.json({ error: "Payload too large" }, { status: 413 });
+    }
+
     const signature = request.headers.get("stripe-signature") || "";
     const secret = process.env.STRIPE_WEBHOOK_SECRET || "";
     if (!secret || !verifyStripeSignature(payload, signature, secret)) {
@@ -20,6 +31,10 @@ export async function POST(request: Request) {
     }
 
     const event = JSON.parse(payload) as StripeEvent;
+    if (!event?.id || !event?.type || !event?.data?.object) {
+      return NextResponse.json({ error: "Invalid event" }, { status: 400 });
+    }
+
     const supabase = getSupabaseAdmin();
     if (!supabase) return NextResponse.json({ error: "Persistence unavailable" }, { status: 503 });
 

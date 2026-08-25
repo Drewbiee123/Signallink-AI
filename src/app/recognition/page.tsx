@@ -6,11 +6,11 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Verified ADA-4WM Production Evidence | SignalLink Protocol LLC",
-  description: "Machine-verifiable production certification for SignalLink Protocol LLC's ADA-4WM Layer 33 provenance gateway.",
+  description: "Machine-verifiable, implementation-level production evidence for SignalLink Protocol LLC's ADA-4WM Layer 33 provenance gateway. Not third-party certification.",
   alternates: { canonical: "/recognition" },
   openGraph: {
     title: "SignalLink ADA-4WM Production Evidence",
-    description: "SHA-256 anchored, ledger-confirmed production evidence from SignalLink Protocol LLC.",
+    description: "SHA-256 anchored, ledger-confirmed implementation-level production evidence from SignalLink Protocol LLC.",
     type: "website"
   }
 };
@@ -20,7 +20,7 @@ export default async function RecognitionPage() {
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "TechArticle",
-    headline: "SignalLink ADA-4WM Production Certification",
+    headline: "SignalLink ADA-4WM Production Evidence Verification",
     author: { "@type": "Organization", name: "SignalLink Protocol LLC" },
     about: ["AI provenance", "ADA-4WM", "SHA-256", "cryptographic audit trails"],
     dateModified: record?.timestamp,
@@ -34,8 +34,13 @@ export default async function RecognitionPage() {
       <p className="eyebrow">SIGNALLINK RECOGNITION RELAY</p>
       <h1>Evidence that can introduce itself.</h1>
       <p className="lead">
-        ADA-4WM production status is published from the same durable anchor ledger used by the verification gateway.
+        ADA-4WM production evidence is published from the same durable anchor ledger used by the verification gateway.
       </p>
+
+      <div className="notice">
+        <strong>Verification scope</strong>
+        <p>This page reports SignalLink implementation-level production evidence. It does not claim NIST, government, OpenAI, C2PA, Sigstore, or other third-party certification or endorsement.</p>
+      </div>
 
       {record ? (
         <>
@@ -57,7 +62,7 @@ export default async function RecognitionPage() {
         </>
       ) : (
         <div className="pending" role="status">
-          No completed production certification is published yet. The relay will activate automatically after the first passing certification run.
+          No completed production-evidence verification is published yet. The relay will activate automatically after the first passing verification run.
         </div>
       )}
 

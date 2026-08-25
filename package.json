@@ -10,7 +10,7 @@
     "validate:genesis": "node scripts/genesis-validation.mjs",
     "certify:production": "node scripts/certify-production.mjs"
   },
-  "engines": { "node": "20.x" },
+  "engines": { "node": "24.x" },
   "dependencies": {
     "@supabase/supabase-js": "2.55.0",
     "next": "16.3.0",
