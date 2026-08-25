@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Federal Mission Assurance Gateway | SignalLink Protocol LLC",
@@ -28,6 +29,13 @@ export default function FederalMissionPage() {
           <label>CVE ID<input name="cve" defaultValue="CVE-2021-44228" required maxLength={32} /></label>
           <button type="submit">Run federal mission assessment</button>
         </form>
+      </article>
+
+      <article className="offer">
+        <p className="offer-code">OPEN REPRODUCIBILITY</p>
+        <h2>Independently challenge the evidence layer</h2>
+        <p>The public challenge exposes a fixed input, canonicalization rule, expected SHA-256, reference verifier, and open review thread. Independent reviewers can reproduce or dispute the result without trusting the SignalLink server.</p>
+        <p className="actions"><Link href="/challenge">Open Public Reproducibility Challenge #1</Link></p>
       </article>
 
       <article className="offer">
