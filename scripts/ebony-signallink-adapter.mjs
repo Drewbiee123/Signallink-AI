@@ -57,19 +57,40 @@ async function main() {
   console.log(`SignalLink base URL: ${baseUrl}`);
   console.log(`Event ID: ${syntheticEbonyEvent.event_id}`);
 
-  const createResult = await postJson("/api/anchor/create", syntheticEbonyEvent);
+  // SignalLink create expects an AnchorRequest wrapper with a payload property.
+  const createResult = await postJson("/api/anchor/create", {
+    payload: syntheticEbonyEvent,
+    metadata: {
+      integration: "HVF_EBONY",
+      mode: "SYNTHETIC_ONLY",
+      purpose: "pre-handshake readiness"
+    }
+  });
+
   console.log("\n[1/2] Anchor created:");
   console.log(JSON.stringify(createResult, null, 2));
 
-  // The verify route may accept either a receipt wrapper or the original payload,
-  // depending on deployment version. Prefer the returned receipt when available.
-  const verifyBody = createResult.receipt
-    ? { payload: syntheticEbonyEvent, receipt: createResult.receipt }
-    : { payload: syntheticEbonyEvent, ...createResult };
+  const required = ["timestamp", "hash", "signature"];
+  for (const field of required) {
+    if (typeof createResult[field] !== "string" || !createResult[field]) {
+      throw new Error(`create response is missing required field: ${field}`);
+    }
+  }
 
-  const verifyResult = await postJson("/api/anchor/verify", verifyBody);
+  // SignalLink verify expects payload + timestamp + hash + signature at top level.
+  const verifyResult = await postJson("/api/anchor/verify", {
+    payload: syntheticEbonyEvent,
+    timestamp: createResult.timestamp,
+    hash: createResult.hash,
+    signature: createResult.signature
+  });
+
   console.log("\n[2/2] Verification result:");
   console.log(JSON.stringify(verifyResult, null, 2));
+
+  if (verifyResult.status !== "VALID" || verifyResult.hash_valid !== true || verifyResult.signature_valid !== true) {
+    throw new Error(`verification did not return VALID: ${JSON.stringify(verifyResult)}`);
+  }
 
   console.log("\nPASS: Synthetic Ebony-shaped event completed the SignalLink anchor/verify loop.");
   console.log("Boundary: This is not a live HVF telemetry handshake or third-party attestation.");
