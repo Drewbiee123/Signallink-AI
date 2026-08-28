@@ -2,7 +2,7 @@
 
 ## Status
 
-SignalLink has prepared a synthetic, non-proprietary adapter for the public HVF / Project Ebony onboarding architecture.
+SignalLink has prepared and tested a synthetic, non-proprietary adapter for the public HVF / Project Ebony onboarding architecture. The adapter processes a paired RGB optical event and dielectric-permittivity sensor event, hashes every raw payload, anchors each normalized event, verifies each receipt, and exports a single evidence record.
 
 This work is intentionally limited to synthetic telemetry until Humphrey Virtual Farms authorizes the live telemetry handshake and provides the agreed endpoint/schema details.
 
@@ -32,6 +32,14 @@ SIGNALLINK_BASE_URL=http://localhost:3000 node scripts/ebony-signallink-adapter.
 ```
 
 The synthetic event is clearly marked `SYNTHETIC_ONLY` and is designed only to prove the SignalLink-side integration path before the live HVF handshake.
+
+The evidence record is written to `evidence/ebony-signallink-synthetic.json` by default. Override it with `EBONY_EVIDENCE_PATH`. If the SignalLink deployment requires bearer authentication, set `SIGNALLINK_API_KEY`.
+
+Run the isolated adapter tests without a deployed SignalLink service:
+
+```bash
+npm run test:ebony
+```
 
 ## Next authorized step
 
