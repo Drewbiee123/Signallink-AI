@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "test": "node --test tests/*.test.mjs",
+    "test:ebony": "node --test tests/ebony-signallink-adapter.test.mjs",
+    "demo:ebony": "node scripts/ebony-signallink-adapter.mjs",
     "validate:genesis": "node scripts/genesis-validation.mjs",
     "certify:production": "node scripts/certify-production.mjs"
   },
