@@ -1,0 +1,81 @@
+{
+  "schema": "signallink.ebony.public-evidence.v1",
+  "generated_at": "2026-08-29T12:10:50.215Z",
+  "integration": "Project Ebony x SignalLink",
+  "mode": "SYNTHETIC_ONLY",
+  "source_boundary": "Public HVF onboarding concepts only; no private HVF telemetry or runtime access",
+  "batch_id": "EBONY-SIGNALLINK-PUBLIC-20260829121050215",
+  "hash_algorithm": "SHA-256",
+  "signature_algorithm": "Ed25519",
+  "public_key_pem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAZYTsUjGDGOgPrH+eK0JZTcw+l0c1M4t879NPf0HFa1o=\n-----END PUBLIC KEY-----\n",
+  "event_count": 2,
+  "results": [
+    {
+      "event": {
+        "schema": "signallink.ebony.telemetry.v1",
+        "source": "HVF_EBONY",
+        "batch_id": "EBONY-SIGNALLINK-PUBLIC-20260829121050215",
+        "timestamp": "2026-08-29T12:10:50.215Z",
+        "mode": "SYNTHETIC_ONLY",
+        "device_id": "EBONY-DEMO-NODE",
+        "zone_id": "ZONE-1-NORTH",
+        "event_id": "EBONY-SIGNALLINK-PUBLIC-20260829121050215-RGB-001",
+        "event_type": "rgb_optical_capture",
+        "payload": {
+          "media_type": "image/rgb+synthetic",
+          "width_px": 1920,
+          "height_px": 1080,
+          "channel_mean": {
+            "red": 0.31,
+            "green": 0.56,
+            "blue": 0.24
+          },
+          "green_leaf_index": 0.42,
+          "latitude": 35.4712,
+          "longitude": -98.3541,
+          "altitude_m": 50,
+          "frame_bytes_sha256": "7486951b39547f38892910b85c8f32e46cdbab53d7597422339568c70353160e"
+        }
+      },
+      "raw_payload_sha256": "b7839c53e10f20f04b79c6efe8f903f45ec49ec5c595f58d506a1fb5227bcb66",
+      "canonical_event_sha256": "e5ac1bbf9ea835d7740de4698cb7b3827887148ccf4ba6d5c620a353081ac889",
+      "ed25519_signature_base64": "RdeWOkXcGuXVvbBx6dh8xHr44fpsTntLIm6cwpagkTuTWMBAcLZtozf+sgdIBsecIQycEDWn1/4+zmN1x6gTAw==",
+      "signature_valid": true,
+      "tamper_test_rejected": true
+    },
+    {
+      "event": {
+        "schema": "signallink.ebony.telemetry.v1",
+        "source": "HVF_EBONY",
+        "batch_id": "EBONY-SIGNALLINK-PUBLIC-20260829121050215",
+        "timestamp": "2026-08-29T12:10:50.215Z",
+        "mode": "SYNTHETIC_ONLY",
+        "device_id": "EBONY-DEMO-NODE",
+        "zone_id": "ZONE-1-NORTH",
+        "event_id": "EBONY-SIGNALLINK-PUBLIC-20260829121050215-DP-001",
+        "event_type": "dielectric_permittivity_reading",
+        "payload": {
+          "sensor_id": "HVF-DP-SYNTH-001",
+          "relative_permittivity": 18.7,
+          "frequency_hz": 1000000,
+          "soil_temperature_c": 27.5,
+          "volumetric_water_content_pct": 21.4,
+          "calibration": "SYNTHETIC_BASELINE_V1"
+        }
+      },
+      "raw_payload_sha256": "1c1b0d142d3c93268405a37748f7788a762bd493378500a7a98715c460ad794a",
+      "canonical_event_sha256": "60dabbddf058d88bb9073ed02a7d4ec1c8ac95cd2096aeb1fc1905c2fb60cc7b",
+      "ed25519_signature_base64": "Xobo9stqtLu6hyo6q49fWAAGi4JlZJw7l0d+Z7f/oYTeyD4K/dzqUPaU49kqvRYO+14hZVC/EFjE0qA1AaeiDg==",
+      "signature_valid": true,
+      "tamper_test_rejected": true
+    }
+  ],
+  "verification_summary": {
+    "all_payload_hashes_present": true,
+    "all_signatures_valid": true,
+    "all_tamper_tests_rejected": true,
+    "adapter_api_path_tested": true,
+    "live_webrtc_handshake_completed": false
+  },
+  "evidence_sha256": "3e3630c9a01fc91b404a883f01d99eb5a90f4a00491ad9358b1dca9dcd4cb656"
+}
