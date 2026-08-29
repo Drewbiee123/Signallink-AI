@@ -17,6 +17,7 @@ export default function Home() {
         <Link href="/challenge" className="secondary-action">Take reproducibility challenge</Link>
         <Link href="/federal" className="secondary-action">Federal mission gateway</Link>
         <Link href="/recognition" className="secondary-action">View published evidence</Link>
+        <Link href="/ebony-demo" className="secondary-action">Project Ebony synthetic demo</Link>
         <Link href="/services" className="secondary-action">Commercial services</Link>
       </div>
       <div className="notice">
