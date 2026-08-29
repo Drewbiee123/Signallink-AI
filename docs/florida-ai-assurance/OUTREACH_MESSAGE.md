@@ -10,7 +10,7 @@ Your legislation recognizes two truths at once: students need to understand AI, 
 
 To make this easy to evaluate, I prepared a public GitHub brief with a synthetic demonstration, machine-readable evidence, implementation history, independent corporate records, an evidence register, limitations, and step-by-step review instructions:
 
-**[INSERT FINAL GITHUB FOLDER LINK]**
+**https://github.com/Drewbiee123/Signallink-AI/tree/main/docs/florida-ai-assurance**
 
 SignalLink is an active Florida limited liability company. Federal identifiers are CAGE 16WJ1 and UEI TNKDPWGE7M43, which your staff may independently verify through SAM.gov and the DLA CAGE search. NIST's official compilation of public comments on SP 800-230 includes SignalLink Protocol LLC's April 13, 2026 submission. These facts establish traceability; they do not imply a government award, clearance, certification, or endorsement.
 
@@ -32,4 +32,3 @@ Drew D. Phillips Jr.
 Founder, SignalLink Protocol LLC  
 CAGE 16WJ1 | UEI TNKDPWGE7M43  
 Florida
-
