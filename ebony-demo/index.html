@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Project Ebony × SignalLink Synthetic Demonstration</title>
+  <style>
+    :root{color-scheme:dark;--bg:#07110f;--panel:#10201c;--line:#285447;--text:#edf8f3;--muted:#a8c4b8;--green:#63edb2}
+    *{box-sizing:border-box} body{margin:0;background:radial-gradient(circle at 70% 0,#17352c 0,#07110f 45%);color:var(--text);font:16px/1.55 system-ui,sans-serif}
+    main{max-width:960px;margin:auto;padding:56px 22px}.eyebrow{color:var(--green);font-weight:800;letter-spacing:.16em}h1{font-size:clamp(2rem,6vw,4.2rem);line-height:1.02;max-width:900px;margin:.35em 0}.lead{font-size:1.15rem;color:var(--muted);max-width:760px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin:32px 0}.card,.event,.boundary{background:rgba(16,32,28,.9);border:1px solid var(--line);border-radius:14px;padding:20px}.card span{display:block;color:var(--muted)}.card strong{font-size:1.7rem;color:var(--green)}
+    dl{display:grid;grid-template-columns:170px 1fr;gap:8px 16px}.hash{overflow-wrap:anywhere;font-family:ui-monospace,monospace;color:var(--green)}.event{margin:14px 0}.event h2{font-size:1.05rem;margin:0 0 8px}.event p{margin:6px 0}.actions{display:flex;flex-wrap:wrap;gap:12px;margin:28px 0}.actions a{padding:12px 18px;border-radius:9px;background:var(--green);color:#04100c;text-decoration:none;font-weight:800}.boundary strong{color:#ffd27a}.quote{color:var(--muted);font-style:italic;margin-top:30px}
+  </style>
+</head>
+<body><main>
+  <p class="eyebrow">PROJECT EBONY × SIGNALLINK</p>
+  <h1>Synthetic telemetry, cryptographically signed and independently checkable.</h1>
+  <p class="lead">Public SignalLink-side integration-readiness evidence using Ebony-shaped RGB optical and dielectric-permittivity events, SHA-256 hashing, Ed25519 signatures, and tamper rejection.</p>
+  <div class="grid">
+    <div class="card"><span>Synthetic events</span><strong id="count">—</strong></div>
+    <div class="card"><span>Signature verification</span><strong id="signatures">—</strong></div>
+    <div class="card"><span>Tamper rejection</span><strong id="tamper">—</strong></div>
+  </div>
+  <dl><dt>Batch ID</dt><dd id="batch">—</dd><dt>Evidence SHA-256</dt><dd class="hash" id="evidenceHash">—</dd><dt>Algorithm</dt><dd id="algorithm">—</dd><dt>Evidence mode</dt><dd id="mode">—</dd></dl>
+  <div id="events"></div>
+  <div class="actions"><a href="../evidence/ebony-signallink-synthetic.json">Download machine-readable evidence</a></div>
+  <div class="boundary"><strong>Evidence boundary</strong><p>This proves the synthetic SignalLink-side integration path. It does not claim a completed live WebRTC connection, access to HVF private systems, Bitcoin publication, or HVF validation. The live handshake remains the next jointly authorized step.</p></div>
+  <p class="quote">“Even your house was born on your foundation.”</p>
+</main><script>
+fetch('../evidence/ebony-signallink-synthetic.json').then(r=>{if(!r.ok)throw Error(r.status);return r.json()}).then(e=>{
+  count.textContent=e.event_count; signatures.textContent=e.verification_summary.all_signatures_valid?'PASS':'FAIL'; tamper.textContent=e.verification_summary.all_tamper_tests_rejected?'PASS':'FAIL'; batch.textContent=e.batch_id; evidenceHash.textContent=e.evidence_sha256; algorithm.textContent=e.signature_algorithm; mode.textContent=e.mode;
+  events.innerHTML=e.results.map(r=>`<section class="event"><h2>${r.event.event_type}</h2><p>Payload SHA-256: <span class="hash">${r.raw_payload_sha256}</span></p><p>Ed25519 signature: ${r.signature_valid?'VALID':'INVALID'} · Modified-event test: ${r.tamper_test_rejected?'REJECTED AS EXPECTED':'FAILED'}</p></section>`).join('');
+}).catch(()=>{events.innerHTML='<section class="event">Evidence could not be loaded.</section>'});
+</script></body></html>
