@@ -1,5 +1,9 @@
 # SignalLink AI — Genesis Verification Gateway
 
+[![CI](https://github.com/Drewbiee123/Signallink-AI/actions/workflows/ci-tests.yml/badge.svg)](https://github.com/Drewbiee123/Signallink-AI/actions/workflows/ci-tests.yml)
+[![CodeQL](https://github.com/Drewbiee123/Signallink-AI/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/Drewbiee123/Signallink-AI/actions/workflows/codeql-analysis.yml)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Drewbiee123/Signallink-AI/badge)](https://scorecard.dev/viewer/?uri=github.com/Drewbiee123/Signallink-AI)
+
 SignalLink Protocol LLC's verifiable evidence gateway for canonical SHA-256 anchoring, timestamp/signature binding, durable anchor storage, and independent tamper verification.
 
 ## Public reproducibility challenge
