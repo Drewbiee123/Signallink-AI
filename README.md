@@ -16,7 +16,7 @@ SignalLink Protocol LLC's verifiable evidence gateway for canonical SHA-256 anch
 - One-command reference verifier: `node scripts/reproduce-federal-challenge.mjs`
 - Expected SHA-256: `b325608828a14df655f1b81d3a452cbd490292e6f3b5af6cae87bb4e1f0e8c77`
 
-Independent participants are encouraged to reproduce the result using their own implementation and post PASS/FAIL plus their canonical string and digest in the public issue. A successful reproduct
+Independent participants are encouraged to reproduce the result using their own implementation and post PASS/FAIL plus their canonical string and digest in the public issue. A successful reproduction demonstrates deterministic cross-implementation agreement only; it is not government or third-party certification or endorsement.
 
 ## Product surface
 
@@ -46,7 +46,7 @@ npm run build
 - `artifacts/genesis-validation-v1.json`
 - `artifacts/genesis-validation-v1.sha256`
 
-The evidence packet covers a known SHA-256 vector, canonical key reordering, 100 deterministic payload mutations, HMAC tamper rejection, Ed25519 tamper rejection, RSA-SHA256 tamper rejection, and
+The evidence packet covers a known SHA-256 vector, canonical key reordering, 100 deterministic payload mutations, HMAC tamper rejection, Ed25519 tamper rejection, RSA-SHA256 tamper rejection, and SHA-256 avalanche measurements. GitHub Actions preserves the generated evidence and can issue GitHub build-provenance attestations on non-PR runs.
 
 **Validation boundary:** these are reproducible implementation-level tests. They are not NIST, C2PA, Sigstore, government, or independent third-party certification.
 
@@ -73,7 +73,7 @@ Optional commerce variables are handled separately from core protocol health.
 
 ## Production evidence run
 
-When a deployment is configured, the existing Production Certification workflow can deploy the exact source candidate, check health, create a permanent anchor, independently recompute SHA-256, con
+When a deployment is configured, the existing Production Certification workflow can deploy the exact source candidate, check health, create a permanent anchor, independently recompute SHA-256, confirm durable ledger persistence, verify the authentic receipt, reject a payload mutation, reject timestamp tampering, attest the resulting evidence packet, and preserve the artifact.
 
 ## Security characteristics implemented
 
