@@ -1,0 +1,87 @@
+name: CodeQL
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 2 * * 0'
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    name: CodeQL JavaScript and TypeScript
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    permissions:
+      contents: read
+      packages: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [javascript-typescript]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@692ce28c2b64c087d94cbe1f1ac16cea857b8916 # v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@5e1e6e40c8302e79e6f16c93e99e5bdd34ec0d9e # v3.28.0
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-extended,security-and-quality
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@5e1e6e40c8302e79e6f16c93e99e5bdd34ec0d9e # v3.28.0
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@5e1e6e40c8302e79e6f16c93e99e5bdd34ec0d9e # v3.28.0
+        with:
+          category: "/language:javascript-typescript"
+
+  validate-workflows:
+    name: Validate Workflows
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@692ce28c2b64c087d94cbe1f1ac16cea857b8916 # v4
+
+      - name: Validate workflow YAML syntax
+        run: |
+          set -e
+          echo "Validating all workflow YAML files..."
+          for f in .github/workflows/*.yml; do
+            echo "  Checking: $f"
+            node -e "
+              const fs = require('fs');
+              const yaml = require('js-yaml');
+              try {
+                yaml.load(fs.readFileSync('$f', 'utf8'));
+                console.log('  ✓ Valid YAML');
+              } catch(e) {
+                console.error('  ✗ YAML Error:', e.message);
+                process.exit(1);
+              }
+            "
+          done
+          echo "All workflow YAML files validated successfully."
+
+      - name: Install actionlint
+        run: |
+          mkdir -p /tmp/actionlint
+          cd /tmp/actionlint
+          curl -fsSL https://github.com/rhysd/actionlint/releases/download/v1.7.3/actionlint-1.7.3-linux-x86_64.tar.gz \
+            | tar xz
+          chmod +x actionlint
+          echo "/tmp/actionlint" >> "$GITHUB_PATH"
+
+      - name: Run actionlint on all workflows
+        run: |
+          echo "Running actionlint on all workflows..."
+          actionlint -format "{{range .}} {{.Filepath}}:{{.Line}}:{{.Column}}: {{.Message}} {{end}}"
+          echo "✓ All workflows pass actionlint checks."
