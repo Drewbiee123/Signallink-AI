@@ -1,0 +1,51 @@
+name: Audit & Lint Gates
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  audit-and-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@692ce28c2b64c087d94cbe1f1ac16cea857b8916 # v4
+
+      - name: Set up Node 24
+        uses: actions/setup-node@1a4442caab2f20f7f3b9acd4a41fbb901b3e5ba7 # v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Run npm audit (production)
+        run: npm audit --omit=dev --audit-level=moderate
+
+      - name: Run npm audit (full spectrum)
+        continue-on-error: true
+        run: npm audit --audit-level=moderate
+
+      - name: Lint workflow YAML syntax
+        run: |
+          for f in .github/workflows/*.yml; do
+            echo "Validating $f..."
+            node -e "const fs = require('fs'); const yaml = require('js-yaml'); try { yaml.load(fs.readFileSync('$f', 'utf8')); console.log('✓ Valid YAML'); } catch(e) { console.error('✗ YAML Error:', e.message); process.exit(1); }"
+          done
+
+      - name: Install actionlint
+        run: |
+          mkdir -p /tmp/actionlint
+          cd /tmp/actionlint
+          curl -fsSL https://github.com/rhysd/actionlint/releases/download/v1.7.3/actionlint-1.7.3-linux-x86_64.tar.gz \
+            | tar xz
+          chmod +x actionlint
+          echo "/tmp/actionlint" >> "$GITHUB_PATH"
+
+      - name: Run actionlint on all workflows
+        run: actionlint -format "{{range .}} {{.Filepath}}:{{.Line}}:{{.Column}}: {{.Message}} {{end}}"
