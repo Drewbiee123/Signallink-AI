@@ -29,16 +29,16 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@5f6e04b7118b75af6a5a00f6ee6dd6cf08d4c4d7 # v4.0.0
+        uses: github/codeql-action/init@fddeee1a7ece751b577e409a89057319e3172939 # v4
         with:
           languages: ${{ matrix.language }}
           queries: security-extended,security-and-quality
 
       - name: Autobuild
-        uses: github/codeql-action/autobuild@5f6e04b7118b75af6a5a00f6ee6dd6cf08d4c4d7 # v4.0.0
+        uses: github/codeql-action/autobuild@fddeee1a7ece751b577e409a89057319e3172939 # v4
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@5f6e04b7118b75af6a5a00f6ee6dd6cf08d4c4d7 # v4.0.0
+        uses: github/codeql-action/analyze@fddeee1a7ece751b577e409a89057319e3172939 # v4
         with:
           category: "/language:javascript-typescript"
 
@@ -51,26 +51,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - name: Validate workflow YAML syntax
-        run: |
-          set -e
-          echo "Validating all workflow YAML files..."
-          for f in .github/workflows/*.yml; do
-            echo "  Checking: $f"
-            node -e "
-              const fs = require('fs');
-              const yaml = require('js-yaml');
-              try {
-                yaml.load(fs.readFileSync('$f', 'utf8'));
-                console.log('  ✓ Valid YAML');
-              } catch(e) {
-                console.error('  ✗ YAML Error:', e.message);
-                process.exit(1);
-              }
-            "
-          done
-          echo "All workflow YAML files validated successfully."
-
       - name: Install actionlint
         run: |
           mkdir -p /tmp/actionlint
@@ -80,8 +60,5 @@ jobs:
           chmod +x actionlint
           echo "/tmp/actionlint" >> "$GITHUB_PATH"
 
-      - name: Run actionlint on all workflows
-        run: |
-          echo "Running actionlint on all workflows..."
-          actionlint -format "{{range .}} {{.Filepath}}:{{.Line}}:{{.Column}}: {{.Message}} {{end}}"
-          echo "✓ All workflows pass actionlint checks."
+      - name: Validate all workflow files
+        run: actionlint -format "{{range .}} {{.Filepath}}:{{.Line}}:{{.Column}}: {{.Message}} {{end}}"
