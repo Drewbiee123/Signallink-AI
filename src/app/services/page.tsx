@@ -1,11 +1,23 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "AI Provenance Services and Payments",
-  description: "Purchase evidence analysis or request an ADA-4WM pilot, monitoring engagement, government PO, or ACH invoice."
+  title: "AI Provenance, Causal Replay, and Monitoring Services",
+  description: "Purchase evidence analysis or request SignalLink causal replay, ADA-4WM pilots, monitoring, government PO, or ACH invoice services."
 };
 
 const offers = [
+  {
+    code: "SL-CAUSAL-PILOT",
+    name: "Causal Replay Pilot",
+    description: "A 30-day workflow-assurance pilot that records the known-good path, first divergence, controlling actor class, and replay verdict for one workflow and up to three integrations.",
+    action: "Request causal replay pilot"
+  },
+  {
+    code: "SL-CAUSAL-MONITORING",
+    name: "Causal Replay Monitoring",
+    description: "Recurring divergence monitoring and evidence receipts for approved production workflows. Enterprise scoping determines volume, retention, and response requirements.",
+    action: "Request monitoring scope"
+  },
   {
     code: "SL-PILOT",
     name: "Provenance Pilot",
@@ -31,8 +43,8 @@ export default async function ServicesPage({ searchParams }: { searchParams: Pro
   return (
     <main>
       <p className="eyebrow">SIGNALLINK REVENUE GATEWAY</p>
-      <h1>Buy evidence. Commission verification.</h1>
-      <p className="lead">Every channel routes to SignalLink Protocol LLC and preserves the service code needed for payment and provenance reconciliation.</p>
+      <h1>Prove what happened. Find where it changed.</h1>
+      <p className="lead">SignalLink combines cryptographic provenance with causal replay: capture the expected workflow, identify its first divergence, classify the controlling actor, and verify whether a controlled replay restores the baseline.</p>
 
       {query.submitted ? <div className="notice" role="status">Request received. SignalLink will review the scope and respond through the email provided.</div> : null}
       {query.error ? <div className="pending" role="alert">The request could not be recorded. Check the fields and try again.</div> : null}
@@ -60,7 +72,7 @@ export default async function ServicesPage({ searchParams }: { searchParams: Pro
               <label>Name<input name="name" required maxLength={120} autoComplete="name" /></label>
               <label>Work email<input name="email" type="email" required maxLength={320} autoComplete="email" /></label>
               <label>Organization<input name="organization" maxLength={200} autoComplete="organization" /></label>
-              <label>What needs to be verified?<textarea name="message" maxLength={5000} rows={4} /></label>
+              <label>Which workflow or decision needs proof?<textarea name="message" maxLength={5000} rows={4} /></label>
               <label className="honeypot" aria-hidden="true">Website<input name="website" tabIndex={-1} autoComplete="off" /></label>
               <button type="submit">{offer.action}</button>
             </form>
@@ -68,7 +80,7 @@ export default async function ServicesPage({ searchParams }: { searchParams: Pro
         ))}
       </div>
 
-      <p className="payment-note">Commercial web payments use Stripe-hosted Checkout. Federal contract payments continue through the agency-authorized invoice and SAM/EFT process rather than consumer checkout.</p>
+      <p className="payment-note">Commercial web payments use Stripe-hosted Checkout. Larger enterprise and federal engagements route through scoped invoices, purchase orders, or ACH/EFT. Causal classification is evidence-backed analysis, not automatic legal attribution or certification.</p>
     </main>
   );
 }
