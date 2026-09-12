@@ -8,8 +8,7 @@ on:
   schedule:
     - cron: '0 2 * * 0'
 
-permissions:
-  contents: read
+permissions: read-all
 
 jobs:
   analyze:
@@ -55,10 +54,10 @@ jobs:
         run: |
           mkdir -p /tmp/actionlint
           cd /tmp/actionlint
-          curl -fsSL https://github.com/rhysd/actionlint/releases/download/v1.7.3/actionlint-1.7.3-linux-x86_64.tar.gz \
-            | tar xz
+          curl -fsSL https://github.com/rhysd/actionlint/releases/download/v1.7.3/actionlint_1.7.3_linux_amd64.tar.gz \
+            | tar xz --no-same-owner
           chmod +x actionlint
           echo "/tmp/actionlint" >> "$GITHUB_PATH"
 
       - name: Validate all workflow files
-        run: actionlint -format "{{range .}} {{.Filepath}}:{{.Line}}:{{.Column}}: {{.Message}} {{end}}"
+        run: actionlint

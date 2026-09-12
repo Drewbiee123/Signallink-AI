@@ -4,6 +4,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 const baseUrl = (process.argv[2] || process.env.SIGNALLINK_BASE_URL || "").replace(/\/$/, "");
 const supabaseUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL || "").replace(/\/$/, "");
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+const protectionBypass = process.env.VERCEL_AUTOMATION_BYPASS_SECRET || "";
 const commit = process.env.GITHUB_SHA || "local";
 const runId = process.env.GITHUB_RUN_ID || "local";
 
@@ -39,8 +40,14 @@ async function readJson(response, label) {
 required("SIGNALLINK_BASE_URL or first argument", baseUrl);
 required("NEXT_PUBLIC_SUPABASE_URL", supabaseUrl);
 required("SUPABASE_SERVICE_ROLE_KEY", serviceKey);
+required("VERCEL_AUTOMATION_BYPASS_SECRET", protectionBypass);
 
-const healthResponse = await fetch(`${baseUrl}/api/health`, { headers: { "cache-control": "no-cache" } });
+const deploymentHeaders = {
+  "cache-control": "no-cache",
+  "x-vercel-protection-bypass": protectionBypass
+};
+
+const healthResponse = await fetch(`${baseUrl}/api/health`, { headers: deploymentHeaders });
 const health = await readJson(healthResponse, "Health check");
 if (health.status !== "ok" || health.database !== "connected") {
   throw new Error(`Health check was not production-ready: ${JSON.stringify(health)}`);
@@ -61,7 +68,7 @@ const expectedHash = sha256(canonicalize(payload));
 
 const anchorResponse = await fetch(`${baseUrl}/api/anchor/create`, {
   method: "POST",
-  headers: { "content-type": "application/json", "cache-control": "no-cache" },
+  headers: { ...deploymentHeaders, "content-type": "application/json" },
   body: JSON.stringify({
     payload,
     metadata: {
@@ -83,7 +90,7 @@ if (!anchor.anchor_id || !anchor.signature || !anchor.timestamp) throw new Error
 
 const verifyResponse = await fetch(`${baseUrl}/api/anchor/verify`, {
   method: "POST",
-  headers: { "content-type": "application/json", "cache-control": "no-cache" },
+  headers: { ...deploymentHeaders, "content-type": "application/json" },
   body: JSON.stringify({ payload, timestamp: anchor.timestamp, hash: anchor.hash, signature: anchor.signature })
 });
 const verified = await readJson(verifyResponse, "Authentic verification");
@@ -94,7 +101,7 @@ if (verified.status !== "VALID" || !verified.hash_valid || !verified.signature_v
 const tamperedPayload = { ...payload, provenance_layer: 34 };
 const tamperResponse = await fetch(`${baseUrl}/api/anchor/verify`, {
   method: "POST",
-  headers: { "content-type": "application/json", "cache-control": "no-cache" },
+  headers: { ...deploymentHeaders, "content-type": "application/json" },
   body: JSON.stringify({ payload: tamperedPayload, timestamp: anchor.timestamp, hash: anchor.hash, signature: anchor.signature })
 });
 const tampered = await parseJson(tamperResponse, "Tamper verification");
@@ -104,7 +111,7 @@ if (tamperResponse.status !== 422 || tampered.status !== "INVALID" || tampered.h
 
 const timestampTamperResponse = await fetch(`${baseUrl}/api/anchor/verify`, {
   method: "POST",
-  headers: { "content-type": "application/json", "cache-control": "no-cache" },
+  headers: { ...deploymentHeaders, "content-type": "application/json" },
   body: JSON.stringify({ payload, timestamp: new Date(Date.parse(anchor.timestamp) + 1000).toISOString(), hash: anchor.hash, signature: anchor.signature })
 });
 const timestampTampered = await parseJson(timestampTamperResponse, "Timestamp tamper verification");

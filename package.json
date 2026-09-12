@@ -11,10 +11,14 @@
     "demo:ebony": "node scripts/ebony-signallink-adapter.mjs",
     "evidence:ebony": "node scripts/generate-ebony-public-evidence.mjs",
     "validate:genesis": "node scripts/genesis-validation.mjs",
+    "preflight:release": "node scripts/release-preflight.mjs",
+    "verify:live": "node scripts/verify-live-release.mjs",
     "certify:production": "node scripts/certify-production.mjs",
     "audit:locked": "npm audit --audit-level=moderate --omit=dev"
   },
-  "engines": { "node": "24.x" },
+  "engines": {
+    "node": "24.x"
+  },
   "dependencies": {
     "@supabase/supabase-js": "2.55.0",
     "next": "16.3.4",
@@ -25,6 +29,7 @@
   "devDependencies": {
     "@types/node": "22.10.5",
     "@types/react": "19.2.14",
+    "js-yaml": "5.4.1",
     "typescript": "5.7.2"
   }
 }
