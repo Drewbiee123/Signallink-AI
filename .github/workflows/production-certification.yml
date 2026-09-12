@@ -8,10 +8,7 @@ on:
         required: true
         type: string
 
-permissions:
-  contents: write
-  id-token: write
-  attestations: write
+permissions: read-all
 
 concurrency:
   group: signalink-production-certification
@@ -22,6 +19,10 @@ jobs:
     if: ${{ inputs.confirmation == 'CERTIFY' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
     env:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
@@ -29,10 +30,10 @@ jobs:
 
     steps:
       - name: Check out the exact candidate
-        uses: actions/checkout@v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
 
       - name: Use Node 24
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 24
           cache: npm
@@ -93,7 +94,7 @@ jobs:
         run: node scripts/certify-production.mjs "${{ steps.deploy.outputs.url }}"
 
       - name: Attest the production evidence packet
-        uses: actions/attest-build-provenance@v3
+        uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a # v3.0.0
         with:
           subject-path: artifacts/production-certification.json
 
@@ -137,7 +138,7 @@ jobs:
             "$SLACK_RECOGNITION_WEBHOOK_URL"
 
       - name: Preserve the production evidence packet
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: signalink-production-certification-${{ github.run_id }}
           path: artifacts/production-certification.json

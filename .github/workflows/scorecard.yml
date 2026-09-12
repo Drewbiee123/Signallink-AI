@@ -8,10 +8,7 @@ on:
   branch_protection_rule:
     types: [created, edited, deleted]
 
-permissions:
-  contents: read
-  security-events: write
-  id-token: write
+permissions: read-all
 
 jobs:
   analysis:
@@ -23,12 +20,12 @@ jobs:
       id-token: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@692ce28c2b64c087d94cbe1f1ac16cea857b8916 # v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
           persist-credentials: false
 
       - name: Run Scorecard analysis
-        uses: ossf/scorecard-action@dc50aa9510b46c811795eb24b2f1ba02a914a856 # v2.3.3
+        uses: ossf/scorecard-action@2d1146689b8cda280b9bc96326124645441f03bc # v2.4.4
         with:
           results_file: results.sarif
           results_format: sarif
@@ -41,7 +38,7 @@ jobs:
           category: scorecard
 
       - name: Upload Scorecard results artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: scorecard-results-${{ github.run_id }}
           path: results.sarif
