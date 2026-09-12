@@ -11,6 +11,8 @@
     "demo:ebony": "node scripts/ebony-signallink-adapter.mjs",
     "evidence:ebony": "node scripts/generate-ebony-public-evidence.mjs",
     "validate:genesis": "node scripts/genesis-validation.mjs",
+    "preflight:release": "node scripts/release-preflight.mjs",
+    "verify:live": "node scripts/verify-live-release.mjs",
     "certify:production": "node scripts/certify-production.mjs",
     "audit:locked": "npm audit --audit-level=moderate --omit=dev"
   },

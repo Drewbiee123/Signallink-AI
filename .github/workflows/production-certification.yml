@@ -44,9 +44,11 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+          PRODUCTION_URL: ${{ secrets.PRODUCTION_URL }}
         run: |
           missing=0
-          for name in VERCEL_TOKEN VERCEL_ORG_ID VERCEL_PROJECT_ID NEXT_PUBLIC_SUPABASE_URL SUPABASE_SERVICE_ROLE_KEY; do
+          for name in VERCEL_TOKEN VERCEL_ORG_ID VERCEL_PROJECT_ID NEXT_PUBLIC_SUPABASE_URL SUPABASE_SERVICE_ROLE_KEY VERCEL_AUTOMATION_BYPASS_SECRET PRODUCTION_URL; do
             if [ -z "${!name:-}" ]; then
               echo "::error::Missing GitHub Actions secret: $name"
               missing=1
@@ -57,11 +59,8 @@ jobs:
       - name: Install locked dependencies
         run: npm ci
 
-      - name: Run deterministic tests
-        run: npm test
-
-      - name: Build the application
-        run: npm run build
+      - name: Run deterministic release preflight
+        run: npm run preflight:release
 
       - name: Pull the authorized Vercel production configuration
         env:
@@ -73,25 +72,44 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: npx --yes vercel@58.1.0 build --prod --scope="$VERCEL_SCOPE" --token="$VERCEL_TOKEN"
 
-      - name: Deploy the exact prebuilt artifact
+      - name: Deploy the exact prebuilt candidate without production traffic
         id: deploy
         shell: bash
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
-          deployment_url="$(npx --yes vercel@58.1.0 deploy --prebuilt --prod --yes --scope="$VERCEL_SCOPE" --token="$VERCEL_TOKEN" 2> >(tee /dev/stderr) | tail -n 1)"
+          deployment_url="$(npx --yes vercel@58.1.0 deploy --prebuilt --yes --scope="$VERCEL_SCOPE" --token="$VERCEL_TOKEN" 2> >(tee /dev/stderr) | tail -n 1)"
           case "$deployment_url" in
             https://*) ;;
             *) echo "::error::Vercel did not return a valid deployment URL"; exit 1 ;;
           esac
           echo "url=$deployment_url" >> "$GITHUB_OUTPUT"
-          echo "Production deployment: $deployment_url" >> "$GITHUB_STEP_SUMMARY"
+          echo "Verified candidate deployment: $deployment_url" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Prove health, create one anchor, confirm the ledger, and recompute SHA-256
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
         run: node scripts/certify-production.mjs "${{ steps.deploy.outputs.url }}"
+
+      - name: Promote only the verified candidate to production
+        id: promote
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: npx --yes vercel@58.1.0 promote "${{ steps.deploy.outputs.url }}" --yes --timeout=5m --scope="$VERCEL_SCOPE" --token="$VERCEL_TOKEN"
+
+      - name: Verify live production boundaries with bounded retry
+        env:
+          PRODUCTION_URL: ${{ secrets.PRODUCTION_URL }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        run: npm run verify:live -- "$PRODUCTION_URL"
+
+      - name: Roll back production automatically if live verification fails
+        if: failure() && steps.promote.outcome == 'success'
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: npx --yes vercel@58.1.0 rollback --yes --timeout=5m --scope="$VERCEL_SCOPE" --token="$VERCEL_TOKEN"
 
       - name: Attest the production evidence packet
         uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a # v3.0.0

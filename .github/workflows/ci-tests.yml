@@ -17,8 +17,8 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - run: npm test
-      - run: npm run build
+      - name: Run deterministic release preflight
+        run: npm run preflight:release
 
   reproducibility-matrix:
     name: Reproduce on ${{ matrix.os }}
