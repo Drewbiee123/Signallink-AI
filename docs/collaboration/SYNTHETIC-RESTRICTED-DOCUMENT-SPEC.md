@@ -243,18 +243,28 @@ scenario_id
 
 No identifier replaces another identifier.
 
-## 9. TEST-001 pass criteria
+## 9. TEST-001 evaluation criteria
 
-PASS requires:
+TEST-001 is a **synthetic contract-fluency test**, not a native-runtime integration test.
 
-- TREE contract satisfied;
-- OMNIX contract satisfied;
-- Fidacy contract satisfied or safe closed-state correctly exercised;
-- SignalLink receipt generated from the actual retained artifacts;
-- all original digests independently recompute;
+PASS for the synthetic model requires:
+
+- TREE reasoning boundary represented without authorization/execution leakage;
+- OMNIX admissibility boundary represented separately from TREE;
+- Fidacy enforcement boundary represented separately from OMNIX;
+- SignalLink receipt generated from the retained synthetic artifacts;
+- all retained synthetic digests independently recompute;
 - upstream/downstream references are intact;
 - mutation of one event causes verification failure;
-- no layer emits a claim outside its boundary.
+- no represented layer emits a claim outside its defined boundary.
+
+Native-runtime status must be reported independently for each external system:
+
+~~~text
+NATIVE_RUNTIME_TESTED | NATIVE_RUNTIME_NOT_TESTED
+~~~
+
+A synthetic PASS must never be promoted to a native integration PASS.
 
 Anything else is PASS only for the subset actually demonstrated and FAIL/UNDETERMINED for the rest.
 
