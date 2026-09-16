@@ -10,27 +10,29 @@ Synthetic actor `synthetic-user-001` requests `READ` against:
 
 `synthetic://restricted-doc/alpha`
 
-This run tests the fluency of the four-layer contract and record linkage. It does not call real TREE, OMNIX, or Fidacy production systems.
+This run tests the fluency of the four-layer contract and record linkage. It does **not** invoke the native TREE runtime, native OMNIX runtime, or a native Fidacy runtime.
+
+Accordingly, the TREE, OMNIX, and Fidacy steps below are **synthetic representations of the agreed responsibility boundaries**.
 
 ## Event flow
 
 ~~~text
-TREE
+TREE boundary representation
   reasoning_record_id: tree-test-001-r1
   conclusion: SUPPORTED
   digest: ee379243b973e9bfc68ff025d54cbcae9344aab2ecce9f8880ba36c714ba3beb
        |
        v
-OMNIX
+OMNIX decision-boundary representation
   decision_id: omnix-test-001-d1
-  decision: ALLOW
+  represented decision: ALLOW
   reason_codes: IDENTITY_OK, DELEGATION_ACTIVE, SCOPE_MATCH, STATE_FRESH
   digest: 2911701a2b0b5f4136ea01a682b447698d38d7e7a63530ea779348a4699b51c7
        |
        v
-Fidacy
+Fidacy enforcement-boundary representation
   grant_id: fidacy-test-001-g1
-  state: ISSUED
+  represented state: ISSUED
   action: READ
   resource: synthetic://restricted-doc/alpha
   use_limit: 1
@@ -72,14 +74,32 @@ Mutated execution digest:
 
 ## Contract fluency result
 
-- TREE produced reasoning only: PASS
-- OMNIX consumed TREE reference and produced governed decision only: PASS
-- Fidacy consumed OMNIX decision and produced bounded grant only: PASS (simulated contract)
-- Executor consumed grant without changing upstream records: PASS
+- TREE boundary represented as reasoning only: PASS
+- OMNIX decision-admissibility boundary represented separately from TREE: PASS
+- Fidacy bounded-enforcement boundary represented separately from OMNIX: PASS
+- Executor consumed the synthetic grant without changing upstream records: PASS
 - SignalLink linked hashes/IDs without rewriting upstream authority: PASS
 - Stable identifiers remained separate: PASS
 - One-event mutation changed the digest and was detected: PASS
-- Production interoperability among independent external implementations: NOT TESTED
+- Native TREE runtime behavior: NOT TESTED
+- Native OMNIX runtime behavior: NOT TESTED
+- Native Fidacy runtime behavior: NOT TESTED
+- Production interoperability among independent implementations: NOT TESTED
+
+## TREE contract status
+
+Per TREE maintainer guidance, the proposed TREE contract must be reviewed field by field before it is described as frozen.
+
+Each TREE field must be classified as one of:
+
+~~~text
+EXISTS NATIVELY
+DERIVABLE
+REQUIRES ADAPTER
+NOT YET IMPLEMENTED
+~~~
+
+Until that review is complete, the TREE contract remains **PROPOSED / DOCUMENTED, NOT FROZEN**.
 
 ## Interpretation
 
@@ -89,4 +109,4 @@ The contract is internally fluent as a synthetic state-transition model:
 reason -> admissibility -> bounded grant -> execution state -> provenance
 ~~~
 
-The next meaningful test is for each independent maintainer/system to emit its own record in the agreed schema and for SignalLink to verify the resulting chain without substituting for any upstream function.
+The next meaningful test is for each independent maintainer/system to emit its own native record in the agreed schema (or an agreed adapter schema) and for SignalLink to verify the resulting chain without substituting for any upstream function.
