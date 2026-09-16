@@ -29,7 +29,7 @@ Provenance != correctness or authority
 ## Current collaboration state
 
 - Four-layer responsibility separation: **DEMONSTRATED AS A DOCUMENTED DESIGN**
-- TREE boundary: **PROPOSED / DOCUMENTED**
+- TREE boundary: **PROPOSED / DOCUMENTED, NOT FROZEN** — field-by-field classification pending: EXISTS NATIVELY / DERIVABLE / REQUIRES ADAPTER / NOT YET IMPLEMENTED
 - OMNIX boundary: **PROPOSED / DOCUMENTED**
 - Fidacy execution-enforcement concept: **PROPOSED**, detailed owner contract still required
 - SignalLink provenance/verification capability in this repository: **DEMONSTRATED**
