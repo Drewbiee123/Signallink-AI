@@ -1,0 +1,13 @@
+{
+  "event_id": "TEST-001",
+  "mode": "synthetic",
+  "source": "external-system-placeholder",
+  "input": {
+    "message": "bounded interoperability test"
+  },
+  "output": {
+    "status": "candidate"
+  },
+  "interface_version": "1",
+  "claim_boundary": "artifact identity only"
+}
