@@ -29,6 +29,8 @@ Every layer must accept a bounded input contract, issue its own stable record ID
 
 ## 3. TREE contract — reasoning
 
+**Contract status:** PROPOSED / DOCUMENTED, NOT FROZEN. The TREE maintainer will classify each proposed field as **EXISTS NATIVELY / DERIVABLE / REQUIRES ADAPTER / NOT YET IMPLEMENTED** before this boundary is frozen.
+
 ### INPUT TO TREE
 
 - scenario/request reference;
