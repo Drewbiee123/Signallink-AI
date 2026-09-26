@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { canonicalize } from "@/lib/canonicalize";
 import { sha256hex } from "@/lib/hashing";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
-import { publicKeyPem, signString } from "@/lib/signing";
+import { publicKeyPem, signString, verifyString } from "@/lib/signing";
 import { scannerTokenHash, validScannerToken } from "@/lib/scanner-access";
 import { retrieveSubscription } from "@/lib/stripe-api";
 
@@ -130,6 +130,7 @@ export async function POST(request: Request) {
     try {
       signature = signString(`${hash}|${timestamp}`);
       if (signature.startsWith("hmac-sha256:")) return NextResponse.json({ error: "Public-key receipt signing is not configured" }, { status: 503 });
+      if (!verifyString(`${hash}|${timestamp}`, signature)) return NextResponse.json({ error: "Receipt signing keys do not match" }, { status: 503 });
     } catch {
       return NextResponse.json({ error: "Receipt signing is unavailable" }, { status: 503 });
     }
