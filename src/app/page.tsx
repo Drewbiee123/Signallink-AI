@@ -12,6 +12,7 @@ export default function Home() {
         <div><span>Federal Vendor</span><strong>CAGE 16WJ1</strong></div>
       </section>
       <div className="actions action-row">
+        <Link href="/scanner">Scan a media file</Link>
         <Link href="/anchor">Create an anchor</Link>
         <Link href="/verify">Verify evidence</Link>
         <Link href="/challenge" className="secondary-action">Take reproducibility challenge</Link>
