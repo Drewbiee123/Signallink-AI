@@ -183,5 +183,7 @@ export default function ScannerPage() {
       <article className="offer"><h2>Unlimited monthly scans</h2><p>No monthly scan cap. Each scan includes a file fingerprint, C2PA check, and signed receipt. Up to 15 scans per minute; manage or cancel renewal any time.</p><p className="price">$9.99 / month</p>{billingOpen ? <button type="button" disabled={busy} onClick={() => void buy("monthly")}>Subscribe</button> : <p>Subscriptions are not open yet.</p>}</article>
     </div>
     <p className="payment-note">Install this site from your browser’s Add to Home Screen menu when available. The app needs a connection to create a receipt. Files are processed for the receipt and are not stored by this route. The ledger stores the hashes and receipt metadata.</p>
+    <p><Link href="/scanner/support">Need help with an access key, payment, or receipt? Contact support.</Link></p>
+    <p><Link href="/scanner/about">Read scan limits, billing, and data handling.</Link></p>
   </main>;
 }
