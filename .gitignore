@@ -25,3 +25,4 @@ TestResults.xml
 .next/
 node_modules/
 .env.local
+supabase/.temp/
