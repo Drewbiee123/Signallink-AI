@@ -20,3 +20,8 @@ rad.json
 *.flf
 #Test results file
 TestResults.xml
+
+# Next.js build artifacts and installed dependencies
+.next/
+node_modules/
+.env.local
