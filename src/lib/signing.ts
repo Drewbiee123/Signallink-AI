@@ -20,6 +20,11 @@ function publicKey(): crypto.KeyObject | null {
   return null;
 }
 
+export function publicKeyPem(): string | null {
+  const key = publicKey();
+  return key ? key.export({ type: "spki", format: "pem" }).toString() : null;
+}
+
 function signatureAlgorithm(key: crypto.KeyObject): string | null {
   const type = key.asymmetricKeyType;
   if (type === "ed25519" || type === "ed448") return null;
