@@ -20,6 +20,7 @@
     "node": "24.x"
   },
   "dependencies": {
+    "@contentauth/c2pa-node": "0.9.8",
     "@supabase/supabase-js": "2.55.0",
     "next": "16.3.4",
     "react": "19.3.0",
