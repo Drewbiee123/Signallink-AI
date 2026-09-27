@@ -1,0 +1,3 @@
+# Review ownership for every tracked path.
+# Enforcement requires a main branch rule that requires Code Owner review.
+* @Drewbiee123
