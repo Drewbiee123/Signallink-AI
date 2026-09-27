@@ -11,6 +11,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${origin}/federal`, changeFrequency: "daily", priority: 1 },
     { url: `${origin}/challenge`, changeFrequency: "weekly", priority: 1 },
     { url: `${origin}/services`, changeFrequency: "weekly", priority: 0.9 },
+    { url: `${origin}/athena-integration`, changeFrequency: "weekly", priority: 0.6 },
     { url: `${origin}/recognition`, changeFrequency: "daily", priority: 0.9 },
     { url: `${origin}/.well-known/ai-provenance.json`, changeFrequency: "daily", priority: 0.8 }
   ];

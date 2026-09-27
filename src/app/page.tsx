@@ -19,6 +19,7 @@ export default function Home() {
         <Link href="/recognition" className="secondary-action">View published evidence</Link>
         <Link href="/ebony-demo" className="secondary-action">Project Ebony synthetic demo</Link>
         <Link href="/services" className="secondary-action">Commercial services</Link>
+        <Link href="/athena-integration" className="secondary-action">Healthcare integration</Link>
       </div>
       <div className="notice">
         <strong>Open verification challenge</strong>

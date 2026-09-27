@@ -1,0 +1,20 @@
+{
+  "resourceType": "Bundle",
+  "id": "example-bundle",
+  "type": "history",
+  "timestamp": "2026-09-27T00:00:00Z",
+  "entry": [{
+    "resource": {
+      "resourceType": "SubscriptionStatus",
+      "type": "event-notification",
+      "subscription": {"reference": "Subscription/example"},
+      "topic": "https://example.invalid/topic",
+      "notificationEvent": [{
+        "eventNumber": "1",
+        "id": "sample-audit-event",
+        "timestamp": "2026-09-27T00:00:00Z",
+        "focus": {"reference": "DiagnosticReport/example"}
+      }]
+    }
+  }]
+}
