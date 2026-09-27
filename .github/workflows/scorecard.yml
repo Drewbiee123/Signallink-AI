@@ -32,7 +32,7 @@ jobs:
           publish_results: true
 
       - name: Upload SARIF results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@5f6e04b7118b75af6a5a00f6ee6dd6cf08d4c4d7 # v4.0.0
+        uses: github/codeql-action/upload-sarif@fddeee1a7ece751b577e409a89057319e3172939 # v4; same resolved commit as codeql-analysis.yml
         with:
           sarif_file: results.sarif
           category: scorecard
