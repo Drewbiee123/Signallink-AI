@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { signatureReady } from "@/lib/athena/signature";
 export function GET() {
-  const oauth = !!(process.env.ATHENA_CLIENT_ID && process.env.ATHENA_CLIENT_SECRET && process.env.ATHENA_TOKEN_URL);
+  const oauth = !!(process.env.ATHENA_CLIENT_ID && process.env.ATHENA_CLIENT_SECRET);
   const signature = signatureReady();
   return NextResponse.json({
     service: "SignalLink Athena Event Gateway", status: "ok",

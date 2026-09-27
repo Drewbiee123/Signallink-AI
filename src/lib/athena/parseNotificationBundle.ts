@@ -21,12 +21,13 @@ export function parseNotificationBundle(value: unknown): AthenaEvent {
   const subscription = (status.subscription as { reference?: unknown } | undefined)?.reference;
   const eventNumber = notification?.eventNumber;
   const id = str(b.id);
-  const eventId = str(eventNumber) || (typeof eventNumber === "number" ? String(eventNumber) : null);
+  const eventId = str(notification?.id);
   if (!id || !str(subscription) || (!eventId && !str(status.type))) throw new Error("INVALID_BUNDLE");
   const timestamp = str(notification?.timestamp) || str(b.timestamp);
   if (timestamp && Number.isNaN(Date.parse(timestamp))) throw new Error("INVALID_BUNDLE");
   return {
-    eventId: eventId ? `${subscription}:${eventId}` : `${subscription}:${id}`,
+    // eventNumber resets for each Bundle; AuditEvent-linked id is stable.
+    eventId: eventId ? `${subscription}:${eventId}` : `${subscription}:${id}:${String(eventNumber ?? "status")}`,
     bundleId: id, subscriptionId: str(subscription), topic: str(status.topic),
     resourceReference: reference, resourceType: reference?.split("/")[0] || null,
     eventTimestamp: timestamp ? new Date(timestamp).toISOString() : null,

@@ -11,6 +11,7 @@
       "topic": "https://example.invalid/topic",
       "notificationEvent": [{
         "eventNumber": "1",
+        "id": "sample-audit-event",
         "timestamp": "2026-09-27T00:00:00Z",
         "focus": {"reference": "DiagnosticReport/example"}
       }]
