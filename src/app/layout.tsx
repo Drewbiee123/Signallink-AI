@@ -16,6 +16,7 @@ export const metadata: Metadata = {
   authors: [{ name: "SignalLink Protocol LLC" }],
   creator: "SignalLink Protocol LLC",
   publisher: "SignalLink Protocol LLC",
+  manifest: "/manifest.webmanifest",
   robots: { index: true, follow: true }
 };
 

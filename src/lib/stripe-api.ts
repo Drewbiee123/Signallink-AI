@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 
 const STRIPE_API = "https://api.stripe.com/v1";
-const STRIPE_VERSION = "2026-06-24.dahlia";
+const STRIPE_VERSION = "2026-08-26.dahlia";
 
 function stripeKey() {
   const key = process.env.STRIPE_RESTRICTED_KEY || process.env.STRIPE_SECRET_KEY;
@@ -38,10 +38,44 @@ export interface StripeCheckoutSession {
   status: string | null;
   payment_status: string;
   payment_intent: string | null;
+  customer?: string | null;
+  subscription?: string | null;
   amount_total: number | null;
   currency: string | null;
   customer_details?: { email?: string | null } | null;
   metadata?: Record<string, string>;
+}
+
+export type ScannerPlan = "pack10" | "monthly";
+
+export async function createScannerCheckout(origin: string, plan: ScannerPlan, tokenHash: string) {
+  const subscription = plan === "monthly";
+  const code = subscription ? "SL-SCAN-MONTHLY-999" : "SL-SCAN-PACK10-499";
+  const body = new URLSearchParams({
+    mode: subscription ? "subscription" : "payment",
+    "line_items[0][price_data][currency]": "usd",
+    "line_items[0][price_data][unit_amount]": subscription ? "999" : "499",
+    "line_items[0][price_data][product_data][name]": subscription ? "SignalLink Provenance Scans Monthly" : "SignalLink Provenance Scans: 10 Credits",
+    "line_items[0][price_data][product_data][description]": "File hashing, C2PA validation, and downloadable signed evidence receipts. No AI-origin classifier is included.",
+    "line_items[0][quantity]": "1",
+    success_url: `${origin}/scanner?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${origin}/scanner?checkout=cancelled`,
+    client_reference_id: integrationIdentifier(),
+    integration_identifier: integrationIdentifier(),
+    "metadata[service_code]": code,
+    "metadata[token_hash]": tokenHash,
+    "metadata[origin]": "SignalLink Protocol LLC"
+  });
+  if (subscription) {
+    body.set("line_items[0][price_data][recurring][interval]", "month");
+    body.set("subscription_data[metadata][service_code]", code);
+    body.set("subscription_data[metadata][token_hash]", tokenHash);
+  } else {
+    body.set("customer_creation", "always");
+  }
+  return stripeRequest<StripeCheckoutSession>("/checkout/sessions", {
+    method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body
+  });
 }
 
 export async function createEvidenceCheckout(origin: string) {
@@ -72,6 +106,27 @@ export async function createEvidenceCheckout(origin: string) {
 export async function retrieveCheckoutSession(id: string) {
   if (!/^cs_(test_|live_)?[A-Za-z0-9]+$/.test(id)) throw new Error("Invalid Checkout Session ID");
   return stripeRequest<StripeCheckoutSession>(`/checkout/sessions/${encodeURIComponent(id)}`);
+}
+
+export async function retrieveSubscription(id: string): Promise<{ id: string; status: string }> {
+  if (!/^sub_[A-Za-z0-9]+$/.test(id)) throw new Error("Invalid Subscription ID");
+  return stripeRequest<{ id: string; status: string }>(`/subscriptions/${encodeURIComponent(id)}`);
+}
+
+export async function createBillingPortal(customerId: string, origin: string): Promise<{ url: string }> {
+  if (!/^cus_[A-Za-z0-9]+$/.test(customerId)) throw new Error("Invalid customer ID");
+  return stripeRequest<{ url: string }>("/billing_portal/sessions", {
+    method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ customer: customerId, return_url: `${origin}/scanner` })
+  });
+}
+
+export async function cancelSubscriptionRenewal(id: string): Promise<{ id: string; cancel_at_period_end: boolean }> {
+  if (!/^sub_[A-Za-z0-9]+$/.test(id)) throw new Error("Invalid Subscription ID");
+  return stripeRequest<{ id: string; cancel_at_period_end: boolean }>(`/subscriptions/${encodeURIComponent(id)}`, {
+    method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ cancel_at_period_end: "true" })
+  });
 }
 
 export function verifyStripeSignature(payload: string, header: string, secret: string) {

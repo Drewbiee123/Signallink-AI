@@ -14,8 +14,13 @@ interface StripeEvent {
   id: string;
   type: string;
   created?: number;
-  data: { object: StripeCheckoutSession };
+  data: { object: StripeCheckoutSession & { metadata?: Record<string, string>; status?: string; amount?: number; amount_refunded?: number } };
 }
+
+const SCANNER_PLANS: Record<string, { uses: number | null; amount: number }> = {
+  "SL-SCAN-PACK10-499": { uses: 10, amount: 499 },
+  "SL-SCAN-MONTHLY-999": { uses: null, amount: 999 }
+};
 
 export async function POST(request: Request) {
   try {
@@ -50,6 +55,31 @@ export async function POST(request: Request) {
       .maybeSingle();
     if (existing) return NextResponse.json({ received: true, duplicate: true });
 
+    if (event.type === "customer.subscription.updated" || event.type === "customer.subscription.deleted") {
+      const subscription = event.data.object;
+      const tokenHash = subscription.metadata?.token_hash;
+      if (tokenHash && subscription.metadata?.service_code === "SL-SCAN-MONTHLY-999") {
+        const status = event.type === "customer.subscription.deleted" ? "inactive" : subscription.status === "active" ? "active" : "inactive";
+        const { error } = await supabase.from("service_entitlements").update({ status }).eq("token_hash", tokenHash).eq("service_code", "SL-SCAN-MONTHLY-999");
+        if (error) throw error;
+      }
+    }
+
+    if (event.type === "charge.refunded" || event.type === "charge.dispute.created") {
+      const charge = event.data.object;
+      if (typeof charge.payment_intent === "string" &&
+          (event.type === "charge.dispute.created" || charge.amount_refunded === charge.amount)) {
+        const { data: order, error: orderError } = await supabase.from("revenue_orders")
+          .select("stripe_session_id,service_code").eq("payment_intent_id", charge.payment_intent).maybeSingle();
+        if (orderError) throw orderError;
+        if (order && SCANNER_PLANS[order.service_code]) {
+          const { error: revokeError } = await supabase.from("service_entitlements")
+            .update({ status: "inactive" }).eq("stripe_session_id", order.stripe_session_id);
+          if (revokeError) throw revokeError;
+        }
+      }
+    }
+
     const relevant = new Set([
       "checkout.session.completed",
       "checkout.session.async_payment_succeeded",
@@ -61,6 +91,29 @@ export async function POST(request: Request) {
       const paid = session.payment_status === "paid";
       const failed = event.type === "checkout.session.async_payment_failed";
       const processedAt = new Date().toISOString();
+
+      const scannerPlan = SCANNER_PLANS[session.metadata?.service_code || ""];
+      const tokenHash = session.metadata?.token_hash;
+      if (paid && scannerPlan && tokenHash && /^[0-9a-f]{64}$/.test(tokenHash)) {
+        if (session.currency !== "usd" || session.amount_total !== scannerPlan.amount ||
+          scannerPlan.uses === null && !session.subscription) {
+          throw new Error("Scanner checkout product or amount mismatch");
+        }
+        const { error: grantError } = await supabase.from("service_entitlements").insert({
+          token_hash: tokenHash,
+          service_code: session.metadata!.service_code,
+          status: "active",
+          max_uses: scannerPlan.uses,
+          stripe_session_id: session.id,
+          customer_email: session.customer_details?.email || null,
+          metadata: { origin: "SignalLink Protocol LLC", subscription_id: session.subscription || null, customer_id: session.customer || null }
+        });
+        if (grantError && grantError.code !== "23505") throw grantError;
+        if (grantError?.code === "23505") {
+          const { data: prior } = await supabase.from("service_entitlements").select("stripe_session_id").eq("token_hash", tokenHash).maybeSingle();
+          if (prior?.stripe_session_id !== session.id) throw new Error("Access key already assigned to another order");
+        }
+      }
 
       const { error } = await supabase.from("revenue_orders").upsert({
         stripe_session_id: session.id,

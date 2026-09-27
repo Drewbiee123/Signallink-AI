@@ -5,6 +5,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return [
     { url: origin, changeFrequency: "weekly", priority: 1 },
     { url: `${origin}/anchor`, changeFrequency: "weekly", priority: 1 },
+    { url: `${origin}/scanner`, changeFrequency: "weekly", priority: 1 },
+    { url: `${origin}/scanner/about`, changeFrequency: "monthly", priority: 0.5 },
     { url: `${origin}/verify`, changeFrequency: "weekly", priority: 1 },
     { url: `${origin}/ebony-demo`, changeFrequency: "weekly", priority: 0.9 },
     { url: `${origin}/proof-corridor`, changeFrequency: "weekly", priority: 0.9 },

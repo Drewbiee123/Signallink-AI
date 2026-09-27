@@ -91,3 +91,13 @@ SignalLink Protocol LLC — ADA-4WM / Provenance Layer 33
 CAGE: 16WJ1
 
 > Even your house was born on your foundation.
+
+## Consumer media scanner release gate
+
+`/scanner` accepts media up to 10 MB and returns a SHA-256 file fingerprint, CAI C2PA validation findings, an asymmetric signature, and a downloadable offline verifier. The uploaded file is not stored. The receipt does not establish human or AI authorship. SynthID and calibrated anomaly classification are not connected and are marked `NOT_CHECKED`.
+
+Apply `supabase/migrations/20260926181601_scanner_commerce.sql` before enabling scans. Configure `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SIGNALINK_PRIVATE_KEY`, and `SIGNALINK_PUBLIC_KEY`. Free access also requires `SIGNALINK_FREE_QUOTA_KEY` on Vercel. The database transaction records the anchor and spends a scan together; only `service_role` may call the metering functions.
+
+Consumer checkout remains closed until both `SIGNALINK_SCANNER_BILLING_ENABLED=true` and `NEXT_PUBLIC_SCANNER_BILLING_ENABLED=true` are set. Configure Stripe credentials and a verified webhook at `/api/stripe/webhook` for `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`, `customer.subscription.updated`, `customer.subscription.deleted`, `charge.refunded`, and `charge.dispute.created`. Configure the Stripe Billing Portal if offering its management link. The available products are 10 scans for $4.99 and unlimited monthly scans for $9.99, subject to 15 scans per minute to prevent abuse. They include file fingerprinting, C2PA validation, and signed receipts only.
+
+The buyer's random bearer access key is saved in the browser; save it separately for other devices. The verified Stripe webhook grants access only after payment is confirmed. `/scanner/support` records key recovery and payment requests in `revenue_leads`; an operator must monitor and respond to them. Automated recovery is not implemented. Before enabling payments, test that recovery path, refund and cancellation events, webhook retries, the signing key, and an upload-to-receipt-to-offline-verification flow in a Stripe sandbox and production preview.
